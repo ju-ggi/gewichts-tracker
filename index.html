@@ -1,168 +1,153 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gewichts-Tracker</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f0; color: #1a1a1a; min-height: 100vh; }
-    .app { max-width: 430px; margin: 0 auto; padding: 1rem; padding-bottom: 80px; }
-    .card { background: white; border: 0.5px solid rgba(0,0,0,0.1); border-radius: 16px; padding: 1.25rem; margin-bottom: 1rem; }
-    .page-title { font-size: 22px; font-weight: 500; margin-bottom: 1.25rem; color: #1a1a1a; }
-    .section-title { font-size: 13px; color: #888; margin-bottom: 0.5rem; font-weight: 500; }
-    .screen { display: none; }
-    .screen.active { display: block; }
-    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 0.5px solid rgba(0,0,0,0.1); display: flex; padding: 8px 0 16px; }
-    .nav-btn { flex: 1; background: none; border: none; font-size: 11px; color: #888; cursor: pointer; padding: 6px; display: flex; flex-direction: column; align-items: center; gap: 3px; }
-    .nav-btn.active { color: #1D9E75; }
-    .nav-icon { font-size: 20px; line-height: 1; }
-    .big-number { font-size: 36px; font-weight: 500; color: #1a1a1a; }
-    .unit { font-size: 16px; color: #888; margin-left: 4px; }
-    .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1rem; }
-    .metric { background: #f5f5f0; border-radius: 12px; padding: 0.75rem 1rem; }
-    .metric-label { font-size: 12px; color: #888; margin-bottom: 4px; }
-    .metric-value { font-size: 20px; font-weight: 500; color: #1a1a1a; }
-    .metric-value.green { color: #0F6E56; }
-    .progress-bar { background: #e8e8e8; border-radius: 99px; height: 8px; margin: 10px 0 6px; overflow: hidden; }
-    .progress-fill { background: #1D9E75; height: 100%; border-radius: 99px; transition: width 0.6s ease; }
-    .progress-label { font-size: 12px; color: #888; }
-    .btn { width: 100%; padding: 12px; border-radius: 12px; border: 0.5px solid rgba(0,0,0,0.15); background: transparent; color: #1a1a1a; font-size: 15px; cursor: pointer; margin-bottom: 8px; font-family: inherit; }
-    .btn:hover { background: #f5f5f0; }
-    .btn.primary { background: #1D9E75; color: white; border-color: #1D9E75; font-weight: 500; }
-    .btn.primary:hover { background: #0F6E56; }
-    label { font-size: 13px; color: #888; display: block; margin-bottom: 4px; }
-    input, select, textarea { width: 100%; padding: 10px 12px; border-radius: 10px; border: 0.5px solid rgba(0,0,0,0.2); background: white; color: #1a1a1a; font-size: 15px; margin-bottom: 12px; font-family: inherit; }
-    textarea { resize: vertical; min-height: 70px; }
-    .tag-grid { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 12px; }
-    .tag { padding: 6px 12px; border: 0.5px solid rgba(0,0,0,0.15); border-radius: 99px; font-size: 13px; cursor: pointer; background: transparent; color: #555; font-family: inherit; }
-    .tag.selected { background: #e1f5ee; color: #0F6E56; border-color: #9FE1CB; }
-    .entry-item { display: flex; justify-content: space-between; align-items: flex-start; padding: 12px 0; border-bottom: 0.5px solid rgba(0,0,0,0.08); }
-    .entry-item:last-child { border-bottom: none; }
-    .entry-date { font-size: 13px; color: #888; }
-    .entry-tags { font-size: 11px; color: #aaa; margin-top: 2px; }
-    .entry-note { font-size: 11px; color: #bbb; margin-top: 2px; font-style: italic; }
-    .entry-weight { font-size: 16px; font-weight: 500; text-align: right; }
-    .entry-diff { font-size: 12px; margin-top: 2px; text-align: right; }
-    .entry-diff.down { color: #0F6E56; }
-    .entry-diff.up { color: #993C1D; }
-    .milestone { background: #e1f5ee; border: 0.5px solid #9FE1CB; border-radius: 10px; padding: 10px 14px; margin-bottom: 8px; font-size: 13px; color: #0F6E56; }
-    .chart-container { position: relative; height: 180px; margin-top: 8px; }
-    .setup-wrapper { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1rem; }
-    .setup-card { background: white; border-radius: 20px; padding: 2rem 1.5rem; width: 100%; max-width: 380px; border: 0.5px solid rgba(0,0,0,0.08); }
-    .setup-logo { font-size: 40px; text-align: center; margin-bottom: 0.5rem; }
-    .setup-headline { font-size: 20px; font-weight: 500; text-align: center; margin-bottom: 0.25rem; }
-    .setup-sub { font-size: 13px; color: #888; text-align: center; margin-bottom: 1.5rem; }
-    .profile-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 0.5px solid rgba(0,0,0,0.08); cursor: pointer; }
-    .profile-item:last-child { border-bottom: none; }
-    .profile-avatar { width: 40px; height: 40px; border-radius: 50%; background: #e1f5ee; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 500; color: #0F6E56; margin-right: 12px; flex-shrink: 0; }
-    .profile-name { font-size: 15px; font-weight: 500; }
-    .profile-info { font-size: 12px; color: #888; }
-    .profile-arrow { color: #ccc; font-size: 18px; }
-    .back-btn { background: none; border: none; color: #888; cursor: pointer; font-size: 14px; padding: 0; margin-bottom: 1rem; font-family: inherit; }
-    .error-msg { color: #993C1D; font-size: 13px; margin-bottom: 10px; display: none; }
-    .hinweis { background: #faeeda; border: 0.5px solid #FAC775; border-radius: 12px; padding: 12px 14px; margin-bottom: 1rem; font-size: 13px; color: #633806; display: flex; align-items: center; gap: 10px; }
-    .hinweis-icon { font-size: 20px; flex-shrink: 0; }
-    .wasser-gläser { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
-    .glas { width: 36px; height: 36px; border-radius: 8px; border: 0.5px solid rgba(0,0,0,0.15); background: #f5f5f0; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
-    .glas.voll { background: #B5D4F4; border-color: #378ADD; }
-    .wasser-info { font-size: 13px; color: #888; margin-top: 4px; }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Gewichts-Tracker</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a1a;min-height:100vh;}
+.versteckt{display:none!important;}
+.zentriert{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:1rem;}
+.setup-karte{background:white;border-radius:20px;padding:2rem 1.5rem;width:100%;max-width:380px;border:0.5px solid rgba(0,0,0,0.08);}
+.logo{font-size:40px;text-align:center;margin-bottom:0.5rem;}
+.titel{font-size:20px;font-weight:500;text-align:center;margin-bottom:0.25rem;}
+.untertitel{font-size:13px;color:#888;text-align:center;margin-bottom:1.5rem;}
+.app{max-width:430px;margin:0 auto;padding:1rem;padding-bottom:80px;}
+.seiten-titel{font-size:22px;font-weight:500;margin-bottom:1.25rem;}
+.karte{background:white;border:0.5px solid rgba(0,0,0,0.1);border-radius:16px;padding:1.25rem;margin-bottom:1rem;}
+.abschnitt{font-size:13px;color:#888;margin-bottom:0.5rem;font-weight:500;}
+.gross{font-size:36px;font-weight:500;}
+.einheit{font-size:16px;color:#888;margin-left:4px;}
+.metrik-raster{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem;}
+.metrik{background:#f5f5f0;border-radius:12px;padding:0.75rem 1rem;}
+.metrik-label{font-size:12px;color:#888;margin-bottom:4px;}
+.metrik-wert{font-size:20px;font-weight:500;}
+.metrik-wert.gruen{color:#0F6E56;}
+.balken{background:#e8e8e8;border-radius:99px;height:8px;margin:10px 0 6px;overflow:hidden;}
+.balken-fill{background:#1D9E75;height:100%;border-radius:99px;transition:width 0.6s ease;}
+.balken-text{font-size:12px;color:#888;}
+.btn{width:100%;padding:12px;border-radius:12px;border:0.5px solid rgba(0,0,0,0.15);background:transparent;color:#1a1a1a;font-size:15px;cursor:pointer;margin-bottom:8px;font-family:inherit;}
+.btn:hover{background:#f5f5f0;}
+.btn.primaer{background:#1D9E75;color:white;border-color:#1D9E75;font-weight:500;}
+.btn.primaer:hover{background:#0F6E56;}
+label{font-size:13px;color:#888;display:block;margin-bottom:4px;}
+input,textarea{width:100%;padding:10px 12px;border-radius:10px;border:0.5px solid rgba(0,0,0,0.2);background:white;color:#1a1a1a;font-size:15px;margin-bottom:12px;font-family:inherit;}
+textarea{resize:vertical;min-height:70px;}
+.fehler{color:#993C1D;font-size:13px;margin-bottom:10px;}
+.tag-raster{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px;}
+.tag{padding:6px 12px;border:0.5px solid rgba(0,0,0,0.15);border-radius:99px;font-size:13px;cursor:pointer;background:transparent;color:#555;font-family:inherit;}
+.tag.aktiv{background:#e1f5ee;color:#0F6E56;border-color:#9FE1CB;}
+.eintrag-item{display:flex;justify-content:space-between;align-items:flex-start;padding:12px 0;border-bottom:0.5px solid rgba(0,0,0,0.08);}
+.eintrag-item:last-child{border-bottom:none;}
+.eintrag-datum{font-size:13px;color:#888;}
+.eintrag-tags{font-size:11px;color:#aaa;margin-top:2px;}
+.eintrag-notiz{font-size:11px;color:#bbb;margin-top:2px;font-style:italic;}
+.eintrag-gewicht{font-size:16px;font-weight:500;text-align:right;}
+.eintrag-diff{font-size:12px;margin-top:2px;text-align:right;}
+.eintrag-diff.runter{color:#0F6E56;}
+.eintrag-diff.hoch{color:#993C1D;}
+.meilenstein{background:#e1f5ee;border:0.5px solid #9FE1CB;border-radius:10px;padding:10px 14px;margin-bottom:8px;font-size:13px;color:#0F6E56;}
+.chart-box{position:relative;height:180px;margin-top:8px;}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:white;border-top:0.5px solid rgba(0,0,0,0.1);display:flex;padding:8px 0 16px;}
+.nav-btn{flex:1;background:none;border:none;font-size:11px;color:#888;cursor:pointer;padding:6px;display:flex;flex-direction:column;align-items:center;gap:3px;}
+.nav-btn.aktiv{color:#1D9E75;}
+.nav-icon{font-size:20px;line-height:1;}
+.profil-item{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:0.5px solid rgba(0,0,0,0.08);cursor:pointer;}
+.profil-item:last-child{border-bottom:none;}
+.profil-avatar{width:40px;height:40px;border-radius:50%;background:#e1f5ee;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:500;color:#0F6E56;margin-right:12px;flex-shrink:0;}
+.zurueck{background:none;border:none;color:#888;cursor:pointer;font-size:14px;padding:0;margin-bottom:1rem;font-family:inherit;}
+.hinweis{background:#faeeda;border:0.5px solid #FAC775;border-radius:12px;padding:12px 14px;margin-bottom:1rem;font-size:13px;color:#633806;display:flex;align-items:center;gap:10px;}
+.wasser-gläser{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0;}
+.glas{width:38px;height:38px;border-radius:8px;border:0.5px solid rgba(0,0,0,0.15);background:#f5f5f0;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;}
+.glas.voll{background:#B5D4F4;border-color:#378ADD;}
+.wasser-text{font-size:13px;color:#888;}
+</style>
 </head>
 <body>
 
-<!-- LOGIN -->
-<div id="screen-login" class="screen active">
-  <div class="setup-wrapper">
-    <div class="setup-card">
-      <div class="setup-logo">&#128274;</div>
-      <p class="setup-headline">Gewichts-Tracker</p>
-      <p class="setup-sub">Bitte gib das Passwort ein</p>
+<div id="login">
+  <div class="zentriert">
+    <div class="setup-karte">
+      <div class="logo">&#128274;</div>
+      <p class="titel">Gewichts-Tracker</p>
+      <p class="untertitel">Bitte gib das Passwort ein</p>
       <label>Passwort</label>
-      <input type="password" id="login-pw" placeholder="Passwort" onkeydown="if(event.key==='Enter') checkLogin()" />
-      <p id="login-error" class="error-msg">Falsches Passwort. Bitte erneut versuchen.</p>
-      <button class="btn primary" onclick="checkLogin()">Anmelden</button>
+      <input type="password" id="pw-feld" placeholder="Passwort" onkeydown="if(event.key==='Enter')login()"/>
+      <p id="pw-fehler" class="fehler versteckt">Falsches Passwort – bitte erneut versuchen.</p>
+      <button class="btn primaer" onclick="login()">Anmelden</button>
     </div>
   </div>
 </div>
 
-<!-- PROFILAUSWAHL -->
-<div id="screen-profiles" class="screen">
-  <div class="setup-wrapper">
-    <div class="setup-card">
-      <div class="setup-logo">&#9878;</div>
-      <p class="setup-headline">Gewichts-Tracker</p>
-      <p class="setup-sub">Wähle dein Profil oder lege ein neues an</p>
-      <div id="profile-list"></div>
-      <button class="btn primary" onclick="showScreen('screen-new-profile')" style="margin-top:1rem;">+ Neues Profil</button>
+<div id="profile" class="versteckt">
+  <div class="zentriert">
+    <div class="setup-karte">
+      <div class="logo">&#9878;</div>
+      <p class="titel">Gewichts-Tracker</p>
+      <p class="untertitel">Wähle dein Profil</p>
+      <div id="profil-liste"></div>
+      <button class="btn primaer" onclick="zeige('neues-profil')" style="margin-top:1rem;">+ Neues Profil</button>
     </div>
   </div>
 </div>
 
-<!-- NEUES PROFIL -->
-<div id="screen-new-profile" class="screen">
-  <div class="setup-wrapper">
-    <div class="setup-card">
-      <button class="back-btn" onclick="showScreen('screen-profiles')">&#8592; Zurück</button>
-      <p class="setup-headline">Profil anlegen</p>
-      <p class="setup-sub" style="margin-bottom:1.25rem;">Deine persönlichen Angaben</p>
-      <label>Name</label>
-      <input type="text" id="setup-name" placeholder="z. B. Max" />
-      <label>Körpergröße (cm)</label>
-      <input type="number" id="setup-height" placeholder="z. B. 178" />
-      <label>Startgewicht (kg)</label>
-      <input type="number" id="setup-start" placeholder="z. B. 110" step="0.1" />
-      <label>Zielgewicht (kg)</label>
-      <input type="number" id="setup-goal" placeholder="z. B. 80" step="0.1" />
-      <button class="btn primary" onclick="saveNewProfile()">Profil speichern</button>
+<div id="neues-profil" class="versteckt">
+  <div class="zentriert">
+    <div class="setup-karte">
+      <button class="zurueck" onclick="zeige('profile')">&#8592; Zurück</button>
+      <p class="titel">Profil anlegen</p>
+      <p class="untertitel" style="margin-bottom:1.25rem;">Deine persönlichen Angaben</p>
+      <label>Name</label><input type="text" id="np-name" placeholder="z. B. Max"/>
+      <label>Körpergröße (cm)</label><input type="number" id="np-groesse" placeholder="z. B. 178"/>
+      <label>Startgewicht (kg)</label><input type="number" id="np-start" placeholder="z. B. 110" step="0.1"/>
+      <label>Zielgewicht (kg)</label><input type="number" id="np-ziel" placeholder="z. B. 80" step="0.1"/>
+      <button class="btn primaer" onclick="profilSpeichern()">Profil speichern</button>
     </div>
   </div>
 </div>
 
-<!-- HAUPT-APP -->
-<div id="screen-main" class="screen">
+<div id="app" class="versteckt">
   <div class="app">
 
-    <div id="tab-dashboard">
-      <p class="page-title" id="dashboard-greeting">Hallo!</p>
-      <div id="eintrag-hinweis" class="hinweis" style="display:none;">
-        <span class="hinweis-icon">&#9995;</span>
-        <span>Heute noch kein Gewicht eingetragen. <strong onclick="showTab('eintrag')" style="cursor:pointer; text-decoration:underline;">Jetzt eintragen</strong></span>
+    <div id="tab-uebersicht">
+      <p class="seiten-titel" id="begruessung">Hallo!</p>
+      <div id="kein-eintrag-hinweis" class="hinweis versteckt">
+        <span style="font-size:20px;">&#9995;</span>
+        <span>Heute noch kein Eintrag. <strong style="cursor:pointer;text-decoration:underline;" onclick="wechsleTab('eintragen')">Jetzt eintragen</strong></span>
       </div>
-      <div class="card">
-        <p class="section-title">Aktuelles Gewicht</p>
-        <span class="big-number" id="current-weight">--</span><span class="unit">kg</span>
-        <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
-        <p class="progress-label" id="progress-text"></p>
+      <div class="karte">
+        <p class="abschnitt">Aktuelles Gewicht</p>
+        <span class="gross" id="akt-gewicht">--</span><span class="einheit">kg</span>
+        <div class="balken"><div class="balken-fill" id="balken-fill" style="width:0%"></div></div>
+        <p class="balken-text" id="balken-text"></p>
       </div>
-      <div class="metric-grid">
-        <div class="metric"><p class="metric-label">Abgenommen</p><p class="metric-value green" id="lost-kg">--</p></div>
-        <div class="metric"><p class="metric-label">Noch zum Ziel</p><p class="metric-value" id="remaining-kg">--</p></div>
-        <div class="metric"><p class="metric-label">Zielerreichung</p><p class="metric-value" id="goal-pct">--</p></div>
-        <div class="metric"><p class="metric-label">BMI</p><p class="metric-value" id="bmi-val">--</p></div>
+      <div class="metrik-raster">
+        <div class="metrik"><p class="metrik-label">Abgenommen</p><p class="metrik-wert gruen" id="m-abgenommen">--</p></div>
+        <div class="metrik"><p class="metrik-label">Noch zum Ziel</p><p class="metrik-wert" id="m-rest">--</p></div>
+        <div class="metrik"><p class="metrik-label">Zielerreichung</p><p class="metrik-wert" id="m-pct">--</p></div>
+        <div class="metrik"><p class="metrik-label">BMI</p><p class="metrik-wert" id="m-bmi">--</p></div>
       </div>
-      <div id="milestones"></div>
-      <div class="card">
-        <p class="section-title">Wasser heute</p>
+      <div id="meilensteine"></div>
+      <div class="karte">
+        <p class="abschnitt">Wasser heute</p>
         <div class="wasser-gläser" id="wasser-gläser"></div>
-        <p class="wasser-info" id="wasser-info"></p>
+        <p class="wasser-text" id="wasser-text"></p>
       </div>
-      <div class="card">
-        <p class="section-title">Verlauf</p>
-        <div class="chart-container"><canvas id="weightChart"></canvas></div>
+      <div class="karte">
+        <p class="abschnitt">Gewichtsverlauf</p>
+        <div class="chart-box"><canvas id="chart"></canvas></div>
       </div>
     </div>
 
-    <div id="tab-eintrag" style="display:none;">
-      <p class="page-title">Neuer Eintrag</p>
-      <div class="card">
-        <label>Datum</label>
-        <input type="date" id="entry-date" />
-        <label>Gewicht (kg)</label>
-        <input type="number" id="entry-weight" placeholder="z. B. 95.4" step="0.1" />
+    <div id="tab-eintragen" class="versteckt">
+      <p class="seiten-titel">Neuer Eintrag</p>
+      <div class="karte">
+        <label>Datum</label><input type="date" id="e-datum"/>
+        <label>Gewicht (kg)</label><input type="number" id="e-gewicht" placeholder="z. B. 95.4" step="0.1"/>
         <label>Ausnahmen</label>
-        <div class="tag-grid">
+        <div class="tag-raster">
           <button class="tag" onclick="toggleTag(this)" data-tag="Alkohol">Alkohol</button>
           <button class="tag" onclick="toggleTag(this)" data-tag="Süßes">Süßes</button>
           <button class="tag" onclick="toggleTag(this)" data-tag="Mehr gegessen">Mehr gegessen</button>
@@ -171,300 +156,254 @@
           <button class="tag" onclick="toggleTag(this)" data-tag="Sport">Sport</button>
         </div>
         <label>Notiz (optional)</label>
-        <textarea id="entry-note" placeholder="Was war heute besonders?"></textarea>
-        <button class="btn primary" onclick="saveEntry()">Eintrag speichern</button>
+        <textarea id="e-notiz" placeholder="Was war heute besonders?"></textarea>
+        <button class="btn primaer" onclick="eintragSpeichern()">Eintrag speichern</button>
       </div>
     </div>
 
-    <div id="tab-verlauf" style="display:none;">
-      <p class="page-title">Verlauf</p>
-      <div class="card"><div id="entry-list"></div></div>
+    <div id="tab-verlauf" class="versteckt">
+      <p class="seiten-titel">Verlauf</p>
+      <div class="karte"><div id="verlauf-liste"></div></div>
     </div>
 
-    <div id="tab-profil" style="display:none;">
-      <p class="page-title">Profil</p>
-      <div class="card">
-        <div id="profil-info"></div>
-        <button class="btn" onclick="switchProfile()" style="margin-top:1rem;">Profil wechseln</button>
+    <div id="tab-profil" class="versteckt">
+      <p class="seiten-titel">Profil</p>
+      <div class="karte">
+        <div id="profil-details"></div>
+        <button class="btn" onclick="zeige('profile')" style="margin-top:1rem;">Profil wechseln</button>
       </div>
     </div>
 
   </div>
-
   <div class="bottom-nav">
-    <button class="nav-btn active" onclick="showTab('dashboard', this)"><span class="nav-icon">&#128200;</span>Übersicht</button>
-    <button class="nav-btn" onclick="showTab('eintrag', this)"><span class="nav-icon">&#43;</span>Eintragen</button>
-    <button class="nav-btn" onclick="showTab('verlauf', this)"><span class="nav-icon">&#128203;</span>Verlauf</button>
-    <button class="nav-btn" onclick="showTab('profil', this)"><span class="nav-icon">&#128100;</span>Profil</button>
+    <button class="nav-btn aktiv" id="nav-uebersicht" onclick="wechsleTab('uebersicht')"><span class="nav-icon">&#128200;</span>Übersicht</button>
+    <button class="nav-btn" id="nav-eintragen" onclick="wechsleTab('eintragen')"><span class="nav-icon">&#43;</span>Eintragen</button>
+    <button class="nav-btn" id="nav-verlauf" onclick="wechsleTab('verlauf')"><span class="nav-icon">&#128203;</span>Verlauf</button>
+    <button class="nav-btn" id="nav-profil" onclick="wechsleTab('profil')"><span class="nav-icon">&#128100;</span>Profil</button>
   </div>
 </div>
 
 <script>
-  // ======= PASSWORT HIER ÄNDERN =======
-  const APP_PASSWORT = 'familie2024';
-  // =====================================
+// ======= PASSWORT HIER ÄNDERN =======
+const PASSWORT = 'familie2024';
+// =====================================
 
-  let activeProfileIndex = null;
-  let selectedTags = [];
-  let chart = null;
+const WASSER_ZIEL = 8;
+let aktivesProfilIndex = null;
+let gewaehlteTypen = [];
+let chart = null;
 
-  function getProfiles() {
-    return JSON.parse(localStorage.getItem('wt_profiles') || '[]');
+function ladeProfile() { try { return JSON.parse(localStorage.getItem('wt_profile') || '[]'); } catch(e) { return []; } }
+function speichereProfile(p) { localStorage.setItem('wt_profile', JSON.stringify(p)); }
+function aktivesProfile() { return ladeProfile()[aktivesProfilIndex]; }
+
+function zeige(id) {
+  ['login','profile','neues-profil','app'].forEach(s => {
+    document.getElementById(s).classList.toggle('versteckt', s !== id);
+  });
+  if (id === 'profile') zeigeProfilListe();
+}
+
+function login() {
+  const eingabe = document.getElementById('pw-feld').value.trim();
+  if (eingabe === PASSWORT) {
+    document.getElementById('pw-fehler').classList.add('versteckt');
+    document.getElementById('pw-feld').value = '';
+    zeige('profile');
+  } else {
+    document.getElementById('pw-fehler').classList.remove('versteckt');
+    document.getElementById('pw-feld').value = '';
   }
+}
 
-  function saveProfiles(profiles) {
-    localStorage.setItem('wt_profiles', JSON.stringify(profiles));
+function zeigeProfilListe() {
+  const profile = ladeProfile();
+  const liste = document.getElementById('profil-liste');
+  if (profile.length === 0) {
+    liste.innerHTML = '<p style="color:#aaa;font-size:13px;text-align:center;padding:1rem 0;">Noch kein Profil vorhanden.</p>';
+    return;
   }
+  liste.innerHTML = profile.map((p, i) => {
+    const letzt = p.eintraege.length ? p.eintraege[p.eintraege.length-1].gewicht : p.start;
+    const abgen = Math.max(0, p.start - letzt).toFixed(1);
+    const ini = p.name.slice(0,2).toUpperCase();
+    return `<div class="profil-item" onclick="profilWaehlen(${i})">
+      <div style="display:flex;align-items:center;">
+        <div class="profil-avatar">${ini}</div>
+        <div><p style="font-size:15px;font-weight:500;">${p.name}</p><p style="font-size:12px;color:#888;">${parseFloat(letzt).toFixed(1)} kg &bull; ${abgen} kg abgenommen</p></div>
+      </div>
+      <span style="color:#ccc;font-size:18px;">&#8250;</span>
+    </div>`;
+  }).join('');
+}
 
-  // ------- WASSERTRACKER -------
-  const WASSER_ZIEL = 8; // Gläser pro Tag
+function profilWaehlen(i) {
+  aktivesProfilIndex = i;
+  zeige('app');
+  wechsleTab('uebersicht');
+}
 
-  function getWasserKey() {
-    const today = new Date().toISOString().split('T')[0];
-    return 'wt_wasser_' + today;
+function profilSpeichern() {
+  const name = document.getElementById('np-name').value.trim();
+  const groesse = parseFloat(document.getElementById('np-groesse').value);
+  const start = parseFloat(document.getElementById('np-start').value);
+  const ziel = parseFloat(document.getElementById('np-ziel').value);
+  if (!name || !groesse || !start || !ziel) { alert('Bitte alle Felder ausfüllen.'); return; }
+  const heute = new Date().toISOString().split('T')[0];
+  const profile = ladeProfile();
+  profile.push({ name, groesse, start, ziel, eintraege: [{ datum: heute, gewicht: start, typen: [], notiz: 'Startgewicht' }] });
+  speichereProfile(profile);
+  ['np-name','np-groesse','np-start','np-ziel'].forEach(id => document.getElementById(id).value = '');
+  aktivesProfilIndex = profile.length - 1;
+  zeige('app');
+  wechsleTab('uebersicht');
+}
+
+function wechsleTab(tab) {
+  ['uebersicht','eintragen','verlauf','profil'].forEach(t => {
+    document.getElementById('tab-' + t).classList.toggle('versteckt', t !== tab);
+    document.getElementById('nav-' + t).classList.toggle('aktiv', t === tab);
+  });
+  if (tab === 'uebersicht') aktualisiereDashboard();
+  if (tab === 'verlauf') zeigeVerlauf();
+  if (tab === 'profil') zeigeProfil();
+  if (tab === 'eintragen') document.getElementById('e-datum').value = new Date().toISOString().split('T')[0];
+}
+
+function aktualisiereDashboard() {
+  const p = aktivesProfile();
+  if (!p) return;
+  const letzt = p.eintraege[p.eintraege.length-1].gewicht;
+  const abgen = Math.max(0, p.start - letzt);
+  const gesamt = p.start - p.ziel;
+  const pct = Math.min(100, Math.round((abgen / gesamt) * 100));
+  const rest = Math.max(0, letzt - p.ziel);
+  const bmi = (letzt / ((p.groesse / 100) ** 2)).toFixed(1);
+  const heute = new Date().toISOString().split('T')[0];
+
+  document.getElementById('begruessung').textContent = 'Hallo, ' + p.name + '!';
+  document.getElementById('akt-gewicht').textContent = letzt.toFixed(1);
+  document.getElementById('m-abgenommen').textContent = abgen.toFixed(1) + ' kg';
+  document.getElementById('m-rest').textContent = rest.toFixed(1) + ' kg';
+  document.getElementById('m-pct').textContent = pct + '%';
+  document.getElementById('m-bmi').textContent = bmi;
+  document.getElementById('balken-fill').style.width = pct + '%';
+  document.getElementById('balken-text').textContent = pct + '% des Ziels erreicht';
+
+  const heuteEintrag = p.eintraege.some(e => e.datum === heute);
+  document.getElementById('kein-eintrag-hinweis').classList.toggle('versteckt', heuteEintrag);
+
+  const ms = document.getElementById('meilensteine');
+  ms.innerHTML = '';
+  [5,10,15,20,25,30,40,50].forEach(m => {
+    if (abgen >= m) ms.innerHTML += `<div class="meilenstein">&#127942; Meilenstein: ${m} kg abgenommen!</div>`;
+  });
+
+  zeigeWasser();
+  zeigeChart(p);
+}
+
+function zeigeWasser() {
+  const heute = new Date().toISOString().split('T')[0];
+  const anzahl = parseInt(localStorage.getItem('wt_wasser_' + heute) || '0');
+  const container = document.getElementById('wasser-gläser');
+  const text = document.getElementById('wasser-text');
+  container.innerHTML = '';
+  for (let i = 0; i < WASSER_ZIEL; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'glas' + (i < anzahl ? ' voll' : '');
+    btn.innerHTML = '&#128167;';
+    const idx = i;
+    btn.onclick = function() {
+      const neu = idx < anzahl ? idx : idx + 1;
+      localStorage.setItem('wt_wasser_' + heute, neu);
+      zeigeWasser();
+    };
+    container.appendChild(btn);
   }
+  if (anzahl === 0) text.textContent = 'Noch kein Glas getrunken – los geht\'s!';
+  else if (anzahl < WASSER_ZIEL) text.textContent = anzahl + ' von ' + WASSER_ZIEL + ' Gläsern getrunken.';
+  else text.textContent = 'Super! Tagesziel erreicht!';
+}
 
-  function getWasserCount() {
-    return parseInt(localStorage.getItem(getWasserKey()) || '0');
-  }
-
-  function renderWasser() {
-    const count = getWasserCount();
-    const container = document.getElementById('wasser-gläser');
-    const info = document.getElementById('wasser-info');
-    if (!container) return;
-    container.innerHTML = '';
-    for (let i = 0; i < WASSER_ZIEL; i++) {
-      const btn = document.createElement('button');
-      btn.className = 'glas' + (i < count ? ' voll' : '');
-      btn.innerHTML = '&#128167;';
-      btn.title = i < count ? 'Glas geleert' : 'Glas trinken';
-      btn.onclick = () => toggleGlas(i);
-      container.appendChild(btn);
-    }
-    if (count === 0) info.textContent = 'Noch kein Glas getrunken – los geht\'s!';
-    else if (count < WASSER_ZIEL) info.textContent = count + ' von ' + WASSER_ZIEL + ' Gläsern getrunken.';
-    else info.textContent = 'Super! Tagesziel erreicht!';
-  }
-
-  function toggleGlas(index) {
-    const count = getWasserCount();
-    const neu = index < count ? index : index + 1;
-    localStorage.setItem(getWasserKey(), neu);
-    renderWasser();
-  }
-
-  // ------- EINTRAGSERINNERUNG -------
-  function checkEintragHeute() {
-    const p = getActive();
-    if (!p) return;
-    const today = new Date().toISOString().split('T')[0];
-    const heuteEintrag = p.entries.some(e => e.date === today);
-    const hinweis = document.getElementById('eintrag-hinweis');
-    if (hinweis) hinweis.style.display = heuteEintrag ? 'none' : 'flex';
-  }
-
-
-    const profiles = getProfiles();
-    return profiles[activeProfileIndex];
-  }
-
-  function checkLogin() {
-    const eingabe = document.getElementById('login-pw').value.trim();
-    if (eingabe === APP_PASSWORT) {
-      document.getElementById('login-error').style.display = 'none';
-      document.getElementById('screen-login').style.display = 'none';
-      document.getElementById('screen-profiles').style.display = 'block';
-      document.getElementById('screen-profiles').classList.add('active');
-      renderProfileList();
-    } else {
-      document.getElementById('login-error').style.display = 'block';
-      document.getElementById('login-pw').value = '';
-    }
-  }
-
-  function showScreen(id) {
-    document.querySelectorAll('.screen').forEach(s => {
-      s.classList.remove('active');
-      s.style.display = 'none';
-    });
-    const target = document.getElementById(id);
-    target.classList.add('active');
-    target.style.display = 'block';
-    if (id === 'screen-profiles') renderProfileList();
-  }
-
-  function renderProfileList() {
-    const profiles = getProfiles();
-    const list = document.getElementById('profile-list');
-    if (profiles.length === 0) {
-      list.innerHTML = '<p style="color:#aaa; font-size:13px; text-align:center; padding:1rem 0;">Noch kein Profil vorhanden.</p>';
-      return;
-    }
-    list.innerHTML = profiles.map((p, i) => {
-      const latest = p.entries.length ? p.entries[p.entries.length - 1].weight : p.start;
-      const lost = Math.max(0, p.start - latest).toFixed(1);
-      const initials = p.name.slice(0, 2).toUpperCase();
-      return `<div class="profile-item" onclick="selectProfile(${i})">
-        <div style="display:flex; align-items:center;">
-          <div class="profile-avatar">${initials}</div>
-          <div>
-            <p class="profile-name">${p.name}</p>
-            <p class="profile-info">${parseFloat(latest).toFixed(1)} kg &bull; ${lost} kg abgenommen</p>
-          </div>
-        </div>
-        <span class="profile-arrow">&#8250;</span>
-      </div>`;
-    }).join('');
-  }
-
-  function selectProfile(i) {
-    activeProfileIndex = i;
-    showScreen('screen-main');
-    showTab('dashboard');
-    updateDashboard();
-  }
-
-  function switchProfile() {
-    activeProfileIndex = null;
-    showScreen('screen-profiles');
-  }
-
-  function saveNewProfile() {
-    const name = document.getElementById('setup-name').value.trim();
-    const height = parseFloat(document.getElementById('setup-height').value);
-    const start = parseFloat(document.getElementById('setup-start').value);
-    const goal = parseFloat(document.getElementById('setup-goal').value);
-    if (!name || !height || !start || !goal) { alert('Bitte alle Felder ausfüllen.'); return; }
-    const profiles = getProfiles();
-    const today = new Date().toISOString().split('T')[0];
-    profiles.push({ name, height, start, goal, entries: [{ date: today, weight: start, tags: [], note: 'Startgewicht' }] });
-    saveProfiles(profiles);
-    ['setup-name','setup-height','setup-start','setup-goal'].forEach(id => document.getElementById(id).value = '');
-    activeProfileIndex = profiles.length - 1;
-    showScreen('screen-main');
-    showTab('dashboard');
-    updateDashboard();
-  }
-
-  function showTab(tab, btn) {
-    ['dashboard','eintrag','verlauf','profil'].forEach(t => {
-      document.getElementById('tab-' + t).style.display = t === tab ? 'block' : 'none';
-    });
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-    if (btn) btn.classList.add('active');
-    if (tab === 'verlauf') renderEntryList();
-    if (tab === 'dashboard') updateDashboard();
-    if (tab === 'profil') renderProfil();
-    if (tab === 'eintrag') document.getElementById('entry-date').value = new Date().toISOString().split('T')[0];
-  }
-
-  function updateDashboard() {
-    const p = getActive();
-    if (!p || !p.entries.length) return;
-    const latest = p.entries[p.entries.length - 1].weight;
-    const lost = Math.max(0, p.start - latest);
-    const total = p.start - p.goal;
-    const pct = Math.min(100, Math.round((lost / total) * 100));
-    const remaining = Math.max(0, latest - p.goal);
-    const bmi = (latest / ((p.height / 100) ** 2)).toFixed(1);
-    document.getElementById('dashboard-greeting').textContent = 'Hallo, ' + p.name + '!';
-    document.getElementById('current-weight').textContent = latest.toFixed(1);
-    document.getElementById('lost-kg').textContent = lost.toFixed(1) + ' kg';
-    document.getElementById('remaining-kg').textContent = remaining.toFixed(1) + ' kg';
-    document.getElementById('goal-pct').textContent = pct + '%';
-    document.getElementById('bmi-val').textContent = bmi;
-    document.getElementById('progress-fill').style.width = pct + '%';
-    document.getElementById('progress-text').textContent = pct + '% des Ziels erreicht';
-    renderWasser();
-    checkEintragHeute();
-    ms.innerHTML = '';
-    [5,10,15,20,25,30,40,50].forEach(m => {
-      if (lost >= m) ms.innerHTML += `<div class="milestone">&#127942; Meilenstein: ${m} kg abgenommen!</div>`;
-    });
-    renderChart(p);
-  }
-
-  function renderChart(p) {
-    const ctx = document.getElementById('weightChart').getContext('2d');
-    if (chart) chart.destroy();
-    chart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: p.entries.map(e => e.date.slice(5)),
-        datasets: [{ data: p.entries.map(e => e.weight), borderColor: '#1D9E75', backgroundColor: 'rgba(29,158,117,0.08)', borderWidth: 2, pointRadius: 3, tension: 0.3, fill: true }]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          y: { ticks: { font: { size: 11 }, color: '#888' }, grid: { color: 'rgba(0,0,0,0.05)' } },
-          x: { ticks: { font: { size: 11 }, color: '#888', maxTicksLimit: 7 }, grid: { display: false } }
-        }
+function zeigeChart(p) {
+  const ctx = document.getElementById('chart').getContext('2d');
+  if (chart) chart.destroy();
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: p.eintraege.map(e => e.datum.slice(5)),
+      datasets: [{ data: p.eintraege.map(e => e.gewicht), borderColor: '#1D9E75', backgroundColor: 'rgba(29,158,117,0.08)', borderWidth: 2, pointRadius: 3, tension: 0.3, fill: true }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { ticks: { font: { size: 11 }, color: '#888' }, grid: { color: 'rgba(0,0,0,0.05)' } },
+        x: { ticks: { font: { size: 11 }, color: '#888', maxTicksLimit: 7 }, grid: { display: false } }
       }
-    });
-  }
+    }
+  });
+}
 
-  function toggleTag(btn) {
-    btn.classList.toggle('selected');
-    const tag = btn.dataset.tag;
-    if (selectedTags.includes(tag)) selectedTags = selectedTags.filter(t => t !== tag);
-    else selectedTags.push(tag);
-  }
+function toggleTag(btn) {
+  btn.classList.toggle('aktiv');
+  const typ = btn.dataset.tag;
+  if (gewaehlteTypen.includes(typ)) gewaehlteTypen = gewaehlteTypen.filter(t => t !== typ);
+  else gewaehlteTypen.push(typ);
+}
 
-  function saveEntry() {
-    const profiles = getProfiles();
-    const p = profiles[activeProfileIndex];
-    const date = document.getElementById('entry-date').value;
-    const weight = parseFloat(document.getElementById('entry-weight').value);
-    const note = document.getElementById('entry-note').value.trim();
-    if (!date || !weight) { alert('Bitte Datum und Gewicht eingeben.'); return; }
-    p.entries.push({ date, weight, tags: [...selectedTags], note });
-    p.entries.sort((a, b) => a.date.localeCompare(b.date));
-    saveProfiles(profiles);
-    selectedTags = [];
-    document.querySelectorAll('.tag').forEach(t => t.classList.remove('selected'));
-    document.getElementById('entry-weight').value = '';
-    document.getElementById('entry-note').value = '';
-    showTab('dashboard');
-    updateDashboard();
-    checkEintragHeute();
-  }
+function eintragSpeichern() {
+  const profile = ladeProfile();
+  const p = profile[aktivesProfilIndex];
+  const datum = document.getElementById('e-datum').value;
+  const gewicht = parseFloat(document.getElementById('e-gewicht').value);
+  const notiz = document.getElementById('e-notiz').value.trim();
+  if (!datum || !gewicht) { alert('Bitte Datum und Gewicht eingeben.'); return; }
+  p.eintraege.push({ datum, gewicht, typen: [...gewaehlteTypen], notiz });
+  p.eintraege.sort((a, b) => a.datum.localeCompare(b.datum));
+  speichereProfile(profile);
+  gewaehlteTypen = [];
+  document.querySelectorAll('.tag').forEach(t => t.classList.remove('aktiv'));
+  document.getElementById('e-gewicht').value = '';
+  document.getElementById('e-notiz').value = '';
+  wechsleTab('uebersicht');
+}
 
-  function renderEntryList() {
-    const p = getActive();
-    const list = document.getElementById('entry-list');
-    const sorted = [...p.entries].reverse();
-    list.innerHTML = sorted.map((e, i) => {
-      const prev = sorted[i + 1];
-      let diff = '';
-      if (prev) {
-        const d = (e.weight - prev.weight).toFixed(1);
-        const cls = d <= 0 ? 'down' : 'up';
-        const sign = d <= 0 ? '' : '+';
-        diff = `<div class="entry-diff ${cls}">${sign}${d} kg</div>`;
-      }
-      const tags = e.tags && e.tags.length ? `<div class="entry-tags">${e.tags.join(' · ')}</div>` : '';
-      const note = e.note ? `<div class="entry-note">${e.note}</div>` : '';
-      return `<div class="entry-item">
-        <div><div class="entry-date">${e.date}</div>${tags}${note}</div>
-        <div><div class="entry-weight">${e.weight.toFixed(1)} kg</div>${diff}</div>
-      </div>`;
-    }).join('');
-  }
+function zeigeVerlauf() {
+  const p = aktivesProfile();
+  const liste = document.getElementById('verlauf-liste');
+  const sortiert = [...p.eintraege].reverse();
+  liste.innerHTML = sortiert.map((e, i) => {
+    const prev = sortiert[i+1];
+    let diff = '';
+    if (prev) {
+      const d = (e.gewicht - prev.gewicht).toFixed(1);
+      const cls = d <= 0 ? 'runter' : 'hoch';
+      const sign = d <= 0 ? '' : '+';
+      diff = `<div class="eintrag-diff ${cls}">${sign}${d} kg</div>`;
+    }
+    const typen = e.typen && e.typen.length ? `<div class="eintrag-tags">${e.typen.join(' · ')}</div>` : '';
+    const notiz = e.notiz ? `<div class="eintrag-notiz">${e.notiz}</div>` : '';
+    return `<div class="eintrag-item">
+      <div><div class="eintrag-datum">${e.datum}</div>${typen}${notiz}</div>
+      <div><div class="eintrag-gewicht">${e.gewicht.toFixed(1)} kg</div>${diff}</div>
+    </div>`;
+  }).join('');
+}
 
-  function renderProfil() {
-    const p = getActive();
-    document.getElementById('profil-info').innerHTML = `
-      <p class="section-title">Dein Profil</p>
-      <table style="width:100%; font-size:14px; border-collapse:collapse;">
-        <tr><td style="padding:6px 0; color:#888;">Name</td><td style="text-align:right; font-weight:500;">${p.name}</td></tr>
-        <tr><td style="padding:6px 0; color:#888;">Größe</td><td style="text-align:right; font-weight:500;">${p.height} cm</td></tr>
-        <tr><td style="padding:6px 0; color:#888;">Startgewicht</td><td style="text-align:right; font-weight:500;">${p.start.toFixed(1)} kg</td></tr>
-        <tr><td style="padding:6px 0; color:#888;">Zielgewicht</td><td style="text-align:right; font-weight:500;">${p.goal.toFixed(1)} kg</td></tr>
-        <tr><td style="padding:6px 0; color:#888;">Einträge</td><td style="text-align:right; font-weight:500;">${p.entries.length}</td></tr>
-      </table>`;
-  }
+function zeigeProfil() {
+  const p = aktivesProfile();
+  document.getElementById('profil-details').innerHTML = `
+    <p class="abschnitt">Dein Profil</p>
+    <table style="width:100%;font-size:14px;border-collapse:collapse;">
+      <tr><td style="padding:6px 0;color:#888;">Name</td><td style="text-align:right;font-weight:500;">${p.name}</td></tr>
+      <tr><td style="padding:6px 0;color:#888;">Größe</td><td style="text-align:right;font-weight:500;">${p.groesse} cm</td></tr>
+      <tr><td style="padding:6px 0;color:#888;">Startgewicht</td><td style="text-align:right;font-weight:500;">${p.start.toFixed(1)} kg</td></tr>
+      <tr><td style="padding:6px 0;color:#888;">Zielgewicht</td><td style="text-align:right;font-weight:500;">${p.ziel.toFixed(1)} kg</td></tr>
+      <tr><td style="padding:6px 0;color:#888;">Einträge</td><td style="text-align:right;font-weight:500;">${p.eintraege.length}</td></tr>
+    </table>`;
+}
 </script>
 </body>
 </html>
