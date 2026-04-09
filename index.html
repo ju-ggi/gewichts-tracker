@@ -62,6 +62,12 @@
     .profile-arrow { color: #ccc; font-size: 18px; }
     .back-btn { background: none; border: none; color: #888; cursor: pointer; font-size: 14px; padding: 0; margin-bottom: 1rem; font-family: inherit; }
     .error-msg { color: #993C1D; font-size: 13px; margin-bottom: 10px; display: none; }
+    .hinweis { background: #faeeda; border: 0.5px solid #FAC775; border-radius: 12px; padding: 12px 14px; margin-bottom: 1rem; font-size: 13px; color: #633806; display: flex; align-items: center; gap: 10px; }
+    .hinweis-icon { font-size: 20px; flex-shrink: 0; }
+    .wasser-gläser { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+    .glas { width: 36px; height: 36px; border-radius: 8px; border: 0.5px solid rgba(0,0,0,0.15); background: #f5f5f0; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+    .glas.voll { background: #B5D4F4; border-color: #378ADD; }
+    .wasser-info { font-size: 13px; color: #888; margin-top: 4px; }
   </style>
 </head>
 <body>
@@ -120,6 +126,10 @@
 
     <div id="tab-dashboard">
       <p class="page-title" id="dashboard-greeting">Hallo!</p>
+      <div id="eintrag-hinweis" class="hinweis" style="display:none;">
+        <span class="hinweis-icon">&#9995;</span>
+        <span>Heute noch kein Gewicht eingetragen. <strong onclick="showTab('eintrag')" style="cursor:pointer; text-decoration:underline;">Jetzt eintragen</strong></span>
+      </div>
       <div class="card">
         <p class="section-title">Aktuelles Gewicht</p>
         <span class="big-number" id="current-weight">--</span><span class="unit">kg</span>
@@ -133,6 +143,11 @@
         <div class="metric"><p class="metric-label">BMI</p><p class="metric-value" id="bmi-val">--</p></div>
       </div>
       <div id="milestones"></div>
+      <div class="card">
+        <p class="section-title">Wasser heute</p>
+        <div class="wasser-gläser" id="wasser-gläser"></div>
+        <p class="wasser-info" id="wasser-info"></p>
+      </div>
       <div class="card">
         <p class="section-title">Verlauf</p>
         <div class="chart-container"><canvas id="weightChart"></canvas></div>
@@ -201,7 +216,55 @@
     localStorage.setItem('wt_profiles', JSON.stringify(profiles));
   }
 
-  function getActive() {
+  // ------- WASSERTRACKER -------
+  const WASSER_ZIEL = 8; // Gläser pro Tag
+
+  function getWasserKey() {
+    const today = new Date().toISOString().split('T')[0];
+    return 'wt_wasser_' + today;
+  }
+
+  function getWasserCount() {
+    return parseInt(localStorage.getItem(getWasserKey()) || '0');
+  }
+
+  function renderWasser() {
+    const count = getWasserCount();
+    const container = document.getElementById('wasser-gläser');
+    const info = document.getElementById('wasser-info');
+    if (!container) return;
+    container.innerHTML = '';
+    for (let i = 0; i < WASSER_ZIEL; i++) {
+      const btn = document.createElement('button');
+      btn.className = 'glas' + (i < count ? ' voll' : '');
+      btn.innerHTML = '&#128167;';
+      btn.title = i < count ? 'Glas geleert' : 'Glas trinken';
+      btn.onclick = () => toggleGlas(i);
+      container.appendChild(btn);
+    }
+    if (count === 0) info.textContent = 'Noch kein Glas getrunken – los geht\'s!';
+    else if (count < WASSER_ZIEL) info.textContent = count + ' von ' + WASSER_ZIEL + ' Gläsern getrunken.';
+    else info.textContent = 'Super! Tagesziel erreicht!';
+  }
+
+  function toggleGlas(index) {
+    const count = getWasserCount();
+    const neu = index < count ? index : index + 1;
+    localStorage.setItem(getWasserKey(), neu);
+    renderWasser();
+  }
+
+  // ------- EINTRAGSERINNERUNG -------
+  function checkEintragHeute() {
+    const p = getActive();
+    if (!p) return;
+    const today = new Date().toISOString().split('T')[0];
+    const heuteEintrag = p.entries.some(e => e.date === today);
+    const hinweis = document.getElementById('eintrag-hinweis');
+    if (hinweis) hinweis.style.display = heuteEintrag ? 'none' : 'flex';
+  }
+
+
     const profiles = getProfiles();
     return profiles[activeProfileIndex];
   }
@@ -313,7 +376,8 @@
     document.getElementById('bmi-val').textContent = bmi;
     document.getElementById('progress-fill').style.width = pct + '%';
     document.getElementById('progress-text').textContent = pct + '% des Ziels erreicht';
-    const ms = document.getElementById('milestones');
+    renderWasser();
+    checkEintragHeute();
     ms.innerHTML = '';
     [5,10,15,20,25,30,40,50].forEach(m => {
       if (lost >= m) ms.innerHTML += `<div class="milestone">&#127942; Meilenstein: ${m} kg abgenommen!</div>`;
@@ -364,6 +428,7 @@
     document.getElementById('entry-note').value = '';
     showTab('dashboard');
     updateDashboard();
+    checkEintragHeute();
   }
 
   function renderEntryList() {
