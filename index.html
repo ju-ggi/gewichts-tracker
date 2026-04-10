@@ -131,19 +131,14 @@ textarea{resize:vertical;min-height:70px;}
       </div>
       <div id="meilensteine"></div>
       <div class="karte">
-        <p class="abschnitt">Rückblick</p>
-        <div class="metrik-raster" style="margin-bottom:0;">
-          <div class="metrik">
-            <p class="metrik-label">Vor 1 Monat</p>
-            <p class="metrik-wert" id="vgl-1m">--</p>
-            <p style="font-size:11px;color:#888;margin-top:2px;" id="vgl-1m-diff"></p>
-          </div>
-          <div class="metrik">
-            <p class="metrik-label">Vor 3 Monaten</p>
-            <p class="metrik-wert" id="vgl-3m">--</p>
-            <p style="font-size:11px;color:#888;margin-top:2px;" id="vgl-3m-diff"></p>
-          </div>
+        <p class="abschnitt">Rückblick – Vergleich</p>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;">
+          <input type="date" id="vgl-datum" style="margin-bottom:0;flex:1;" onchange="zeigeVergleich()"/>
+          <button class="btn" style="width:auto;padding:10px 14px;margin-bottom:0;" onclick="vglSetze(1)">1M</button>
+          <button class="btn" style="width:auto;padding:10px 14px;margin-bottom:0;" onclick="vglSetze(3)">3M</button>
+          <button class="btn" style="width:auto;padding:10px 14px;margin-bottom:0;" onclick="vglSetze(6)">6M</button>
         </div>
+        <div id="vgl-ergebnis" style="font-size:14px;color:#888;text-align:center;padding:8px 0;">Wähle ein Datum zum Vergleichen.</div>
       </div>
       <div class="karte">
         <p class="abschnitt">Wasser heute</p>
@@ -315,17 +310,7 @@ function aktualisiereDashboard() {
   });
 
   zeigeWasser();
-  zeigeVergleich(p, letzt);
   zeigeChart(p);
-}
-
-function naechsterEintragVorDatum(eintraege, zielDatum) {
-  const sortiert = [...eintraege].sort((a, b) => a.datum.localeCompare(b.datum));
-  let naechster = null;
-  for (const e of sortiert) {
-    if (e.datum <= zielDatum) naechster = e;
-  }
-  return naechster;
 }
 
 function datumsVersatz(monate) {
@@ -334,34 +319,44 @@ function datumsVersatz(monate) {
   return d.toISOString().split('T')[0];
 }
 
-function zeigeVergleich(p, aktGewicht) {
-  const datum1m = datumsVersatz(1);
-  const datum3m = datumsVersatz(3);
+function vglSetze(monate) {
+  document.getElementById('vgl-datum').value = datumsVersatz(monate);
+  zeigeVergleich();
+}
 
-  const e1m = naechsterEintragVorDatum(p.eintraege, datum1m);
-  const e3m = naechsterEintragVorDatum(p.eintraege, datum3m);
+function zeigeVergleich() {
+  const p = aktivesProfile();
+  if (!p) return;
+  const zielDatum = document.getElementById('vgl-datum').value;
+  if (!zielDatum) return;
 
-  if (e1m) {
-    const diff1m = aktGewicht - e1m.gewicht;
-    const sign = diff1m <= 0 ? '' : '+';
-    const farbe = diff1m <= 0 ? '#0F6E56' : '#993C1D';
-    document.getElementById('vgl-1m').textContent = e1m.gewicht.toFixed(1) + ' kg';
-    document.getElementById('vgl-1m-diff').innerHTML = `<span style="color:${farbe};font-weight:500;">${sign}${diff1m.toFixed(1)} kg seitdem</span>`;
-  } else {
-    document.getElementById('vgl-1m').textContent = '--';
-    document.getElementById('vgl-1m-diff').textContent = 'Noch keine Daten';
+  const aktGewicht = p.eintraege[p.eintraege.length-1].gewicht;
+  const sortiert = [...p.eintraege].sort((a, b) => a.datum.localeCompare(b.datum));
+  const vergleichsEintrag = sortiert.filter(e => e.datum <= zielDatum).pop();
+  const ergebnis = document.getElementById('vgl-ergebnis');
+
+  if (!vergleichsEintrag) {
+    ergebnis.innerHTML = '<span style="color:#aaa;">Kein Eintrag für diesen Zeitraum vorhanden.</span>';
+    return;
   }
 
-  if (e3m) {
-    const diff3m = aktGewicht - e3m.gewicht;
-    const sign = diff3m <= 0 ? '' : '+';
-    const farbe = diff3m <= 0 ? '#0F6E56' : '#993C1D';
-    document.getElementById('vgl-3m').textContent = e3m.gewicht.toFixed(1) + ' kg';
-    document.getElementById('vgl-3m-diff').innerHTML = `<span style="color:${farbe};font-weight:500;">${sign}${diff3m.toFixed(1)} kg seitdem</span>`;
-  } else {
-    document.getElementById('vgl-3m').textContent = '--';
-    document.getElementById('vgl-3m-diff').textContent = 'Noch keine Daten';
-  }
+  const diff = aktGewicht - vergleichsEintrag.gewicht;
+  const sign = diff <= 0 ? '' : '+';
+  const farbe = diff <= 0 ? '#0F6E56' : '#993C1D';
+  const richtung = diff <= 0 ? 'abgenommen' : 'zugenommen';
+
+  ergebnis.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid rgba(0,0,0,0.08);">
+      <span style="color:#888;">Am ${vergleichsEintrag.datum}</span>
+      <span style="font-weight:500;">${vergleichsEintrag.gewicht.toFixed(1)} kg</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;">
+      <span style="color:#888;">Heute</span>
+      <span style="font-weight:500;">${aktGewicht.toFixed(1)} kg</span>
+    </div>
+    <div style="text-align:center;padding:10px 0 4px;">
+      <span style="font-size:20px;font-weight:500;color:${farbe};">${sign}${diff.toFixed(1)} kg ${richtung}</span>
+    </div>`;
 }
 
 function zeigeWasser() {
