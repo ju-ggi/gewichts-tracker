@@ -196,10 +196,40 @@ textarea{resize:vertical;min-height:70px;}
       </div>
     </div>
 
+    <div id="tab-koerper" class="versteckt">
+      <p class="seiten-titel">Körper & Fitness</p>
+      <div class="karte">
+        <p class="abschnitt">Maße eintragen</p>
+        <label>Datum</label>
+        <input type="date" id="km-datum"/>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div><label>Bauch (cm)</label><input type="number" id="km-bauch" placeholder="z. B. 95" step="0.1"/></div>
+          <div><label>Hüfte (cm)</label><input type="number" id="km-huefte" placeholder="z. B. 105" step="0.1"/></div>
+          <div><label>Brust (cm)</label><input type="number" id="km-brust" placeholder="z. B. 100" step="0.1"/></div>
+          <div><label>Oberschenkel (cm)</label><input type="number" id="km-oberschenkel" placeholder="z. B. 60" step="0.1"/></div>
+        </div>
+        <p class="abschnitt" style="margin-top:0.5rem;">Fitnesslevel</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div><label>Laufzeit (Min.)</label><input type="number" id="km-laufzeit" placeholder="z. B. 30" step="1"/></div>
+          <div><label>Schritte / Tag</label><input type="number" id="km-schritte" placeholder="z. B. 8000" step="100"/></div>
+          <div><label>Liegestützen</label><input type="number" id="km-liegestuetzen" placeholder="z. B. 10" step="1"/></div>
+          <div><label>Trainingsgewicht (kg)</label><input type="number" id="km-gewicht-training" placeholder="z. B. 20" step="0.5"/></div>
+        </div>
+        <label>Notiz (optional)</label>
+        <textarea id="km-notiz" placeholder="Wie hast du dich gefühlt?"></textarea>
+        <button class="btn primaer" onclick="koerperSpeichern()">Eintrag speichern</button>
+      </div>
+      <div class="karte">
+        <p class="abschnitt">Verlauf Körpermaße</p>
+        <div id="koerper-verlauf"></div>
+      </div>
+    </div>
+
   </div>
   <div class="bottom-nav">
     <button class="nav-btn aktiv" id="nav-uebersicht" onclick="wechsleTab('uebersicht')"><span class="nav-icon">&#128200;</span>Übersicht</button>
     <button class="nav-btn" id="nav-eintragen" onclick="wechsleTab('eintragen')"><span class="nav-icon">&#43;</span>Eintragen</button>
+    <button class="nav-btn" id="nav-koerper" onclick="wechsleTab('koerper')"><span class="nav-icon">&#128170;</span>Körper</button>
     <button class="nav-btn" id="nav-verlauf" onclick="wechsleTab('verlauf')"><span class="nav-icon">&#128203;</span>Verlauf</button>
     <button class="nav-btn" id="nav-profil" onclick="wechsleTab('profil')"><span class="nav-icon">&#128100;</span>Profil</button>
   </div>
@@ -282,13 +312,14 @@ function profilSpeichern() {
 }
 
 function wechsleTab(tab) {
-  ['uebersicht','eintragen','verlauf','profil'].forEach(t => {
+  ['uebersicht','eintragen','verlauf','profil','koerper'].forEach(t => {
     document.getElementById('tab-' + t).classList.toggle('versteckt', t !== tab);
     document.getElementById('nav-' + t).classList.toggle('aktiv', t === tab);
   });
   if (tab === 'uebersicht') aktualisiereDashboard();
   if (tab === 'verlauf') zeigeVerlauf();
   if (tab === 'profil') zeigeProfil();
+  if (tab === 'koerper') { zeigeKoerperVerlauf(); document.getElementById('km-datum').value = new Date().toISOString().split('T')[0]; }
   if (tab === 'eintragen') document.getElementById('e-datum').value = new Date().toISOString().split('T')[0];
 }
 
@@ -516,6 +547,63 @@ function zeigeVerlauf() {
     return `<div class="eintrag-item">
       <div><div class="eintrag-datum">${e.datum}</div>${typen}${notiz}</div>
       <div><div class="eintrag-gewicht">${e.gewicht.toFixed(1)} kg</div>${diff}</div>
+    </div>`;
+  }).join('');
+}
+
+function koerperSpeichern() {
+  const profile = ladeProfile();
+  const p = profile[aktivesProfilIndex];
+  const datum = document.getElementById('km-datum').value;
+  if (!datum) { alert('Bitte ein Datum auswählen.'); return; }
+  if (!p.koerper) p.koerper = [];
+  const eintrag = {
+    datum,
+    bauch: document.getElementById('km-bauch').value ? parseFloat(document.getElementById('km-bauch').value) : null,
+    huefte: document.getElementById('km-huefte').value ? parseFloat(document.getElementById('km-huefte').value) : null,
+    brust: document.getElementById('km-brust').value ? parseFloat(document.getElementById('km-brust').value) : null,
+    oberschenkel: document.getElementById('km-oberschenkel').value ? parseFloat(document.getElementById('km-oberschenkel').value) : null,
+    laufzeit: document.getElementById('km-laufzeit').value ? parseFloat(document.getElementById('km-laufzeit').value) : null,
+    schritte: document.getElementById('km-schritte').value ? parseFloat(document.getElementById('km-schritte').value) : null,
+    liegestuetzen: document.getElementById('km-liegestuetzen').value ? parseFloat(document.getElementById('km-liegestuetzen').value) : null,
+    trainingsgewicht: document.getElementById('km-gewicht-training').value ? parseFloat(document.getElementById('km-gewicht-training').value) : null,
+    notiz: document.getElementById('km-notiz').value.trim()
+  };
+  p.koerper.push(eintrag);
+  p.koerper.sort((a, b) => a.datum.localeCompare(b.datum));
+  speichereProfile(profile);
+  ['km-bauch','km-huefte','km-brust','km-oberschenkel','km-laufzeit','km-schritte','km-liegestuetzen','km-gewicht-training','km-notiz'].forEach(id => document.getElementById(id).value = '');
+  alert('Eintrag gespeichert!');
+  zeigeKoerperVerlauf();
+}
+
+function zeigeKoerperVerlauf() {
+  const p = aktivesProfile();
+  const container = document.getElementById('koerper-verlauf');
+  if (!p.koerper || p.koerper.length === 0) {
+    container.innerHTML = '<p style="color:#aaa;font-size:13px;text-align:center;padding:1rem 0;">Noch keine Einträge vorhanden.</p>';
+    return;
+  }
+  const felder = [
+    { key: 'bauch', label: 'Bauch', einheit: 'cm' },
+    { key: 'huefte', label: 'Hüfte', einheit: 'cm' },
+    { key: 'brust', label: 'Brust', einheit: 'cm' },
+    { key: 'oberschenkel', label: 'Oberschenkel', einheit: 'cm' },
+    { key: 'laufzeit', label: 'Laufzeit', einheit: 'Min.' },
+    { key: 'schritte', label: 'Schritte', einheit: '' },
+    { key: 'liegestuetzen', label: 'Liegestützen', einheit: '' },
+    { key: 'trainingsgewicht', label: 'Trainingsgewicht', einheit: 'kg' }
+  ];
+  const sortiert = [...p.koerper].reverse();
+  container.innerHTML = sortiert.map(e => {
+    const werte = felder.filter(f => e[f.key] !== null && e[f.key] !== undefined)
+      .map(f => `<span style="font-size:12px;color:#888;">${f.label}: <strong style="color:#1a1a1a;">${e[f.key]} ${f.einheit}</strong></span>`)
+      .join(' &nbsp;·&nbsp; ');
+    const notiz = e.notiz ? `<div style="font-size:11px;color:#bbb;font-style:italic;margin-top:3px;">${e.notiz}</div>` : '';
+    return `<div style="padding:10px 0;border-bottom:0.5px solid rgba(0,0,0,0.08);">
+      <div style="font-size:13px;color:#888;margin-bottom:4px;">${e.datum}</div>
+      <div style="line-height:1.8;">${werte}</div>
+      ${notiz}
     </div>`;
   }).join('');
 }
