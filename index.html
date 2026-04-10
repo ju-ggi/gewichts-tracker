@@ -132,13 +132,17 @@ textarea{resize:vertical;min-height:70px;}
       <div id="meilensteine"></div>
       <div class="karte">
         <p class="abschnitt">Rückblick – Vergleich</p>
-        <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;">
-          <input type="date" id="vgl-datum" style="margin-bottom:0;flex:1;" onchange="zeigeVergleich()"/>
-          <button class="btn" style="width:auto;padding:10px 14px;margin-bottom:0;" onclick="vglSetze(1)">1M</button>
-          <button class="btn" style="width:auto;padding:10px 14px;margin-bottom:0;" onclick="vglSetze(3)">3M</button>
-          <button class="btn" style="width:auto;padding:10px 14px;margin-bottom:0;" onclick="vglSetze(6)">6M</button>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+          <div>
+            <label>Datum 1</label>
+            <input type="date" id="vgl-datum-1" style="margin-bottom:0;" onchange="zeigeVergleich()"/>
+          </div>
+          <div>
+            <label>Datum 2</label>
+            <input type="date" id="vgl-datum-2" style="margin-bottom:0;" onchange="zeigeVergleich()"/>
+          </div>
         </div>
-        <div id="vgl-ergebnis" style="font-size:14px;color:#888;text-align:center;padding:8px 0;">Wähle ein Datum zum Vergleichen.</div>
+        <div id="vgl-ergebnis" style="font-size:14px;color:#888;text-align:center;padding:8px 0;">Wähle zwei Daten zum Vergleichen.</div>
       </div>
       <div class="karte">
         <p class="abschnitt">Wasser heute</p>
@@ -313,46 +317,40 @@ function aktualisiereDashboard() {
   zeigeChart(p);
 }
 
-function datumsVersatz(monate) {
-  const d = new Date();
-  d.setMonth(d.getMonth() - monate);
-  return d.toISOString().split('T')[0];
-}
-
-function vglSetze(monate) {
-  document.getElementById('vgl-datum').value = datumsVersatz(monate);
-  zeigeVergleich();
-}
-
 function zeigeVergleich() {
   const p = aktivesProfile();
   if (!p) return;
-  const zielDatum = document.getElementById('vgl-datum').value;
-  if (!zielDatum) return;
-
-  const aktGewicht = p.eintraege[p.eintraege.length-1].gewicht;
-  const sortiert = [...p.eintraege].sort((a, b) => a.datum.localeCompare(b.datum));
-  const vergleichsEintrag = sortiert.filter(e => e.datum <= zielDatum).pop();
+  const datum1 = document.getElementById('vgl-datum-1').value;
+  const datum2 = document.getElementById('vgl-datum-2').value;
   const ergebnis = document.getElementById('vgl-ergebnis');
 
-  if (!vergleichsEintrag) {
-    ergebnis.innerHTML = '<span style="color:#aaa;">Kein Eintrag für diesen Zeitraum vorhanden.</span>';
+  if (!datum1 || !datum2) {
+    ergebnis.innerHTML = '<span style="color:#aaa;">Bitte beide Daten auswählen.</span>';
     return;
   }
 
-  const diff = aktGewicht - vergleichsEintrag.gewicht;
+  const sortiert = [...p.eintraege].sort((a, b) => a.datum.localeCompare(b.datum));
+  const eintrag1 = sortiert.filter(e => e.datum <= datum1).pop();
+  const eintrag2 = sortiert.filter(e => e.datum <= datum2).pop();
+
+  if (!eintrag1 || !eintrag2) {
+    ergebnis.innerHTML = '<span style="color:#aaa;">Für einen der Zeiträume sind keine Daten vorhanden.</span>';
+    return;
+  }
+
+  const diff = eintrag2.gewicht - eintrag1.gewicht;
   const sign = diff <= 0 ? '' : '+';
   const farbe = diff <= 0 ? '#0F6E56' : '#993C1D';
   const richtung = diff <= 0 ? 'abgenommen' : 'zugenommen';
 
   ergebnis.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid rgba(0,0,0,0.08);">
-      <span style="color:#888;">Am ${vergleichsEintrag.datum}</span>
-      <span style="font-weight:500;">${vergleichsEintrag.gewicht.toFixed(1)} kg</span>
+      <span style="color:#888;">${eintrag1.datum}</span>
+      <span style="font-weight:500;">${eintrag1.gewicht.toFixed(1)} kg</span>
     </div>
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;">
-      <span style="color:#888;">Heute</span>
-      <span style="font-weight:500;">${aktGewicht.toFixed(1)} kg</span>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid rgba(0,0,0,0.08);">
+      <span style="color:#888;">${eintrag2.datum}</span>
+      <span style="font-weight:500;">${eintrag2.gewicht.toFixed(1)} kg</span>
     </div>
     <div style="text-align:center;padding:10px 0 4px;">
       <span style="font-size:20px;font-weight:500;color:${farbe};">${sign}${diff.toFixed(1)} kg ${richtung}</span>
