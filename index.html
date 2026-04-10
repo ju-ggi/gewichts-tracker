@@ -130,6 +130,14 @@ textarea{resize:vertical;min-height:70px;}
         <div class="metrik"><p class="metrik-label">BMI</p><p class="metrik-wert" id="m-bmi">--</p></div>
       </div>
       <div id="meilensteine"></div>
+      <div id="plateau-hinweis" class="hinweis versteckt">
+        <span style="font-size:20px;">&#9888;</span>
+        <span id="plateau-text"></span>
+      </div>
+      <div class="karte">
+        <p class="abschnitt">Prognose</p>
+        <div id="prognose-inhalt" style="font-size:14px;color:#888;text-align:center;padding:4px 0;">Wird berechnet...</div>
+      </div>
       <div class="karte">
         <p class="abschnitt">Rückblick – Vergleich</p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
@@ -314,7 +322,73 @@ function aktualisiereDashboard() {
   });
 
   zeigeWasser();
+  zeigePrognose(p);
+  zeigePlateau(p);
   zeigeChart(p);
+}
+
+function zeigePrognose(p) {
+  const inhalt = document.getElementById('prognose-inhalt');
+  if (p.eintraege.length < 3) {
+    inhalt.innerHTML = '<span style="color:#aaa;">Noch zu wenig Daten – bitte mehr Einträge hinzufügen.</span>';
+    return;
+  }
+  const sortiert = [...p.eintraege].sort((a, b) => a.datum.localeCompare(b.datum));
+  const letzt = sortiert[sortiert.length - 1];
+  const erst = sortiert[0];
+  const tage = Math.max(1, (new Date(letzt.datum) - new Date(erst.datum)) / (1000 * 60 * 60 * 24));
+  const abnahmeProTag = (erst.gewicht - letzt.gewicht) / tage;
+
+  if (abnahmeProTag <= 0) {
+    inhalt.innerHTML = '<span style="color:#993C1D;">Aktuell keine Abnahme erkennbar – weiter dranbleiben!</span>';
+    return;
+  }
+
+  const restKg = Math.max(0, letzt.gewicht - p.ziel);
+  const restTage = Math.round(restKg / abnahmeProTag);
+  const zielDatum = new Date();
+  zielDatum.setDate(zielDatum.getDate() + restTage);
+  const zielStr = zielDatum.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  const woche = (restTage / 7).toFixed(1);
+
+  inhalt.innerHTML = `
+    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid rgba(0,0,0,0.08);">
+      <span style="color:#888;">Abnahme pro Woche</span>
+      <span style="font-weight:500;">${(abnahmeProTag * 7).toFixed(2)} kg</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid rgba(0,0,0,0.08);">
+      <span style="color:#888;">Noch ca.</span>
+      <span style="font-weight:500;">${woche} Wochen</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding:6px 0;">
+      <span style="color:#888;">Voraussichtlich am</span>
+      <span style="font-weight:500;color:#0F6E56;">${zielStr}</span>
+    </div>`;
+}
+
+function zeigePlateau(p) {
+  const hinweis = document.getElementById('plateau-hinweis');
+  const text = document.getElementById('plateau-text');
+  if (p.eintraege.length < 5) { hinweis.classList.add('versteckt'); return; }
+
+  const sortiert = [...p.eintraege].sort((a, b) => a.datum.localeCompare(b.datum));
+  const heute = new Date();
+  const vor14 = new Date();
+  vor14.setDate(heute.getDate() - 14);
+
+  const letzte14 = sortiert.filter(e => new Date(e.datum) >= vor14);
+  if (letzte14.length < 3) { hinweis.classList.add('versteckt'); return; }
+
+  const max = Math.max(...letzte14.map(e => e.gewicht));
+  const min = Math.min(...letzte14.map(e => e.gewicht));
+  const schwankung = max - min;
+
+  if (schwankung < 0.5) {
+    hinweis.classList.remove('versteckt');
+    text.textContent = 'Du befindest dich seit ca. 2 Wochen in einem Plateau (' + schwankung.toFixed(1) + ' kg Schwankung). Das ist normal – bleib dran!';
+  } else {
+    hinweis.classList.add('versteckt');
+  }
 }
 
 function zeigeVergleich() {
