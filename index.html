@@ -131,6 +131,21 @@ textarea{resize:vertical;min-height:70px;}
       </div>
       <div id="meilensteine"></div>
       <div class="karte">
+        <p class="abschnitt">Rückblick</p>
+        <div class="metrik-raster" style="margin-bottom:0;">
+          <div class="metrik">
+            <p class="metrik-label">Vor 1 Monat</p>
+            <p class="metrik-wert" id="vgl-1m">--</p>
+            <p style="font-size:11px;color:#888;margin-top:2px;" id="vgl-1m-diff"></p>
+          </div>
+          <div class="metrik">
+            <p class="metrik-label">Vor 3 Monaten</p>
+            <p class="metrik-wert" id="vgl-3m">--</p>
+            <p style="font-size:11px;color:#888;margin-top:2px;" id="vgl-3m-diff"></p>
+          </div>
+        </div>
+      </div>
+      <div class="karte">
         <p class="abschnitt">Wasser heute</p>
         <div class="wasser-gläser" id="wasser-gläser"></div>
         <p class="wasser-text" id="wasser-text"></p>
@@ -300,7 +315,53 @@ function aktualisiereDashboard() {
   });
 
   zeigeWasser();
+  zeigeVergleich(p, letzt);
   zeigeChart(p);
+}
+
+function naechsterEintragVorDatum(eintraege, zielDatum) {
+  const sortiert = [...eintraege].sort((a, b) => a.datum.localeCompare(b.datum));
+  let naechster = null;
+  for (const e of sortiert) {
+    if (e.datum <= zielDatum) naechster = e;
+  }
+  return naechster;
+}
+
+function datumsVersatz(monate) {
+  const d = new Date();
+  d.setMonth(d.getMonth() - monate);
+  return d.toISOString().split('T')[0];
+}
+
+function zeigeVergleich(p, aktGewicht) {
+  const datum1m = datumsVersatz(1);
+  const datum3m = datumsVersatz(3);
+
+  const e1m = naechsterEintragVorDatum(p.eintraege, datum1m);
+  const e3m = naechsterEintragVorDatum(p.eintraege, datum3m);
+
+  if (e1m) {
+    const diff1m = aktGewicht - e1m.gewicht;
+    const sign = diff1m <= 0 ? '' : '+';
+    const farbe = diff1m <= 0 ? '#0F6E56' : '#993C1D';
+    document.getElementById('vgl-1m').textContent = e1m.gewicht.toFixed(1) + ' kg';
+    document.getElementById('vgl-1m-diff').innerHTML = `<span style="color:${farbe};font-weight:500;">${sign}${diff1m.toFixed(1)} kg seitdem</span>`;
+  } else {
+    document.getElementById('vgl-1m').textContent = '--';
+    document.getElementById('vgl-1m-diff').textContent = 'Noch keine Daten';
+  }
+
+  if (e3m) {
+    const diff3m = aktGewicht - e3m.gewicht;
+    const sign = diff3m <= 0 ? '' : '+';
+    const farbe = diff3m <= 0 ? '#0F6E56' : '#993C1D';
+    document.getElementById('vgl-3m').textContent = e3m.gewicht.toFixed(1) + ' kg';
+    document.getElementById('vgl-3m-diff').innerHTML = `<span style="color:${farbe};font-weight:500;">${sign}${diff3m.toFixed(1)} kg seitdem</span>`;
+  } else {
+    document.getElementById('vgl-3m').textContent = '--';
+    document.getElementById('vgl-3m-diff').textContent = 'Noch keine Daten';
+  }
 }
 
 function zeigeWasser() {
