@@ -194,6 +194,12 @@ textarea{resize:vertical;min-height:70px;}
         <div id="profil-details"></div>
         <button class="btn" onclick="zeige('profile')" style="margin-top:1rem;">Profil wechseln</button>
       </div>
+      <div class="karte">
+        <p class="abschnitt">Export</p>
+        <p style="font-size:13px;color:#888;margin-bottom:12px;">Deine Daten als Datei herunterladen.</p>
+        <button class="btn primaer" onclick="exportCSV()">Als CSV herunterladen (Excel)</button>
+        <button class="btn" onclick="exportPDF()">Als PDF herunterladen</button>
+      </div>
     </div>
 
     <div id="tab-koerper" class="versteckt">
@@ -649,6 +655,88 @@ function zeigeKoerperVerlauf() {
       ${notiz}
     </div>`;
   }).join('');
+}
+
+function exportCSV() {
+  const p = aktivesProfile();
+  const zeilen = [['Datum','Gewicht (kg)','Bauch (cm)','Hüfte (cm)','Brust (cm)','Oberschenkel (cm)','Ausnahmen','Notiz']];
+
+  p.eintraege.forEach(e => {
+    const k = p.koerper ? p.koerper.find(k => k.datum === e.datum) : null;
+    zeilen.push([
+      e.datum,
+      e.gewicht.toFixed(1),
+      k && k.bauch ? k.bauch : '',
+      k && k.huefte ? k.huefte : '',
+      k && k.brust ? k.brust : '',
+      k && k.oberschenkel ? k.oberschenkel : '',
+      e.typen && e.typen.length ? e.typen.join(', ') : '',
+      e.notiz || ''
+    ]);
+  });
+
+  const inhalt = zeilen.map(z => z.map(zelle => `"${zelle}"`).join(';')).join('\n');
+  const blob = new Blob(['\uFEFF' + inhalt], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = p.name + '_Gewichtsverlauf.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportPDF() {
+  const p = aktivesProfile();
+  const heute = new Date().toLocaleDateString('de-DE');
+  const letzt = p.eintraege[p.eintraege.length-1].gewicht;
+  const abgen = Math.max(0, p.start - letzt).toFixed(1);
+  const bmi = (letzt / ((p.groesse / 100) ** 2)).toFixed(1);
+
+  const zeilen = p.eintraege.map(e => {
+    const k = p.koerper ? p.koerper.find(k => k.datum === e.datum) : null;
+    return `<tr>
+      <td>${e.datum}</td>
+      <td>${e.gewicht.toFixed(1)} kg</td>
+      <td>${k && k.bauch ? k.bauch + ' cm' : '–'}</td>
+      <td>${k && k.huefte ? k.huefte + ' cm' : '–'}</td>
+      <td>${k && k.brust ? k.brust + ' cm' : '–'}</td>
+      <td>${k && k.oberschenkel ? k.oberschenkel + ' cm' : '–'}</td>
+    </tr>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"/>
+  <title>Gewichtsverlauf ${p.name}</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 2rem; color: #1a1a1a; }
+    h1 { font-size: 22px; margin-bottom: 0.25rem; }
+    .meta { font-size: 13px; color: #888; margin-bottom: 1.5rem; }
+    .zusammenfassung { display: flex; gap: 2rem; margin-bottom: 1.5rem; }
+    .box { background: #f5f5f0; border-radius: 8px; padding: 0.75rem 1rem; }
+    .box-label { font-size: 11px; color: #888; }
+    .box-wert { font-size: 20px; font-weight: bold; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { background: #f5f5f0; padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+    td { padding: 7px 8px; border-bottom: 0.5px solid #eee; }
+    @media print { body { padding: 1rem; } }
+  </style></head><body>
+  <h1>Gewichtsverlauf – ${p.name}</h1>
+  <p class="meta">Erstellt am ${heute}</p>
+  <div class="zusammenfassung">
+    <div class="box"><div class="box-label">Startgewicht</div><div class="box-wert">${p.start.toFixed(1)} kg</div></div>
+    <div class="box"><div class="box-label">Aktuell</div><div class="box-wert">${letzt.toFixed(1)} kg</div></div>
+    <div class="box"><div class="box-label">Abgenommen</div><div class="box-wert">${abgen} kg</div></div>
+    <div class="box"><div class="box-label">BMI</div><div class="box-wert">${bmi}</div></div>
+  </div>
+  <table>
+    <thead><tr><th>Datum</th><th>Gewicht</th><th>Bauch</th><th>Hüfte</th><th>Brust</th><th>Oberschenkel</th></tr></thead>
+    <tbody>${zeilen}</tbody>
+  </table>
+  <script>window.onload = () => window.print();<\/script>
+  </body></html>`;
+
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  window.open(url, '_blank');
 }
 
 function zeigeProfil() {
