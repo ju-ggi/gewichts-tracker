@@ -14,7 +14,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .logo{font-size:40px;text-align:center;margin-bottom:0.5rem;}
 .titel{font-size:20px;font-weight:500;text-align:center;margin-bottom:0.25rem;}
 .untertitel{font-size:13px;color:#888;text-align:center;margin-bottom:1.5rem;}
-.app{max-width:430px;margin:0 auto;padding:1rem;padding-bottom:80px;}
+.app{width:100%;max-width:1200px;margin:0 auto;padding:1rem;padding-bottom:80px;}
 .seiten-titel{font-size:22px;font-weight:500;margin-bottom:1.25rem;}
 .karte{background:white;border:0.5px solid rgba(0,0,0,0.1);border-radius:16px;padding:1.25rem;margin-bottom:1rem;}
 .abschnitt{font-size:13px;color:#888;margin-bottom:0.5rem;font-weight:500;}
@@ -33,7 +33,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .btn.primaer{background:#1D9E75;color:white;border-color:#1D9E75;font-weight:500;}
 .btn.primaer:hover{background:#0F6E56;}
 label{font-size:13px;color:#888;display:block;margin-bottom:4px;}
-input,textarea{width:100%;padding:10px 12px;border-radius:10px;border:0.5px solid rgba(0,0,0,0.2);background:white;color:#1a1a1a;font-size:15px;margin-bottom:12px;font-family:inherit;}
+input,textarea,select{width:100%;padding:10px 12px;border-radius:10px;border:0.5px solid rgba(0,0,0,0.2);background:white;color:#1a1a1a;font-size:15px;margin-bottom:12px;font-family:inherit;}
 textarea{resize:vertical;min-height:70px;}
 .fehler{color:#993C1D;font-size:13px;margin-bottom:10px;}
 .tag-raster{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px;}
@@ -49,7 +49,7 @@ textarea{resize:vertical;min-height:70px;}
 .eintrag-diff.runter{color:#0F6E56;}
 .eintrag-diff.hoch{color:#993C1D;}
 .meilenstein{background:#e1f5ee;border:0.5px solid #9FE1CB;border-radius:10px;padding:10px 14px;margin-bottom:8px;font-size:13px;color:#0F6E56;}
-.chart-box{position:relative;height:180px;margin-top:8px;}
+.chart-box{position:relative;height:220px;margin-top:8px;}
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:white;border-top:0.5px solid rgba(0,0,0,0.1);display:flex;padding:8px 0 16px;}
 .nav-btn{flex:1;background:none;border:none;font-size:11px;color:#888;cursor:pointer;padding:6px;display:flex;flex-direction:column;align-items:center;gap:3px;}
 .nav-btn.aktiv{color:#1D9E75;}
@@ -63,6 +63,16 @@ textarea{resize:vertical;min-height:70px;}
 .glas{width:38px;height:38px;border-radius:8px;border:0.5px solid rgba(0,0,0,0.15);background:#f5f5f0;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;}
 .glas.voll{background:#B5D4F4;border-color:#378ADD;}
 .wasser-text{font-size:13px;color:#888;}
+
+/* Responsives Raster – 2 Spalten ab 768px */
+.seiten-raster{display:grid;grid-template-columns:1fr;gap:0;}
+@media(min-width:768px){
+  .seiten-raster{grid-template-columns:1fr 1fr;gap:1rem;align-items:start;}
+  .seiten-raster .volle-breite{grid-column:1/-1;}
+  .metrik-raster{grid-template-columns:repeat(4,1fr);}
+  .chart-box{height:260px;}
+  .bottom-nav{max-width:1200px;left:50%;transform:translateX(-50%);border-radius:16px 16px 0 0;border:0.5px solid rgba(0,0,0,0.1);}
+}
 </style>
 </head>
 <body>
@@ -113,53 +123,49 @@ textarea{resize:vertical;min-height:70px;}
 
     <div id="tab-uebersicht">
       <p class="seiten-titel" id="begruessung">Hallo!</p>
-      <div id="kein-eintrag-hinweis" class="hinweis versteckt">
+      <div id="kein-eintrag-hinweis" class="hinweis versteckt volle-breite">
         <span style="font-size:20px;">&#9995;</span>
         <span>Heute noch kein Eintrag. <strong style="cursor:pointer;text-decoration:underline;" onclick="wechsleTab('eintragen')">Jetzt eintragen</strong></span>
       </div>
-      <div class="karte">
-        <p class="abschnitt">Aktuelles Gewicht</p>
-        <span class="gross" id="akt-gewicht">--</span><span class="einheit">kg</span>
-        <div class="balken"><div class="balken-fill" id="balken-fill" style="width:0%"></div></div>
-        <p class="balken-text" id="balken-text"></p>
-      </div>
-      <div class="metrik-raster">
-        <div class="metrik"><p class="metrik-label">Abgenommen</p><p class="metrik-wert gruen" id="m-abgenommen">--</p></div>
-        <div class="metrik"><p class="metrik-label">Noch zum Ziel</p><p class="metrik-wert" id="m-rest">--</p></div>
-        <div class="metrik"><p class="metrik-label">Zielerreichung</p><p class="metrik-wert" id="m-pct">--</p></div>
-        <div class="metrik"><p class="metrik-label">BMI</p><p class="metrik-wert" id="m-bmi">--</p></div>
-      </div>
-      <div id="meilensteine"></div>
-      <div id="plateau-hinweis" class="hinweis versteckt">
+      <div id="plateau-hinweis" class="hinweis versteckt volle-breite">
         <span style="font-size:20px;">&#9888;</span>
         <span id="plateau-text"></span>
       </div>
-      <div class="karte">
-        <p class="abschnitt">Prognose</p>
-        <div id="prognose-inhalt" style="font-size:14px;color:#888;text-align:center;padding:4px 0;">Wird berechnet...</div>
-      </div>
-      <div class="karte">
-        <p class="abschnitt">Rückblick – Vergleich</p>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
-          <div>
-            <label>Datum 1</label>
-            <input type="date" id="vgl-datum-1" style="margin-bottom:0;" onchange="zeigeVergleich()"/>
-          </div>
-          <div>
-            <label>Datum 2</label>
-            <input type="date" id="vgl-datum-2" style="margin-bottom:0;" onchange="zeigeVergleich()"/>
-          </div>
+      <div id="meilensteine" class="volle-breite"></div>
+      <div class="seiten-raster">
+        <div class="karte volle-breite">
+          <p class="abschnitt">Aktuelles Gewicht</p>
+          <span class="gross" id="akt-gewicht">--</span><span class="einheit">kg</span>
+          <div class="balken"><div class="balken-fill" id="balken-fill" style="width:0%"></div></div>
+          <p class="balken-text" id="balken-text"></p>
         </div>
-        <div id="vgl-ergebnis" style="font-size:14px;color:#888;text-align:center;padding:8px 0;">Wähle zwei Daten zum Vergleichen.</div>
-      </div>
-      <div class="karte">
-        <p class="abschnitt">Wasser heute</p>
-        <div class="wasser-gläser" id="wasser-gläser"></div>
-        <p class="wasser-text" id="wasser-text"></p>
-      </div>
-      <div class="karte">
-        <p class="abschnitt">Gewichtsverlauf</p>
-        <div class="chart-box"><canvas id="chart"></canvas></div>
+        <div class="metrik-raster volle-breite">
+          <div class="metrik"><p class="metrik-label">Abgenommen</p><p class="metrik-wert gruen" id="m-abgenommen">--</p></div>
+          <div class="metrik"><p class="metrik-label">Noch zum Ziel</p><p class="metrik-wert" id="m-rest">--</p></div>
+          <div class="metrik"><p class="metrik-label">Zielerreichung</p><p class="metrik-wert" id="m-pct">--</p></div>
+          <div class="metrik"><p class="metrik-label">BMI</p><p class="metrik-wert" id="m-bmi">--</p></div>
+        </div>
+        <div class="karte">
+          <p class="abschnitt">Prognose</p>
+          <div id="prognose-inhalt" style="font-size:14px;color:#888;padding:4px 0;">Wird berechnet...</div>
+        </div>
+        <div class="karte">
+          <p class="abschnitt">Wasser heute</p>
+          <div class="wasser-gläser" id="wasser-gläser"></div>
+          <p class="wasser-text" id="wasser-text"></p>
+        </div>
+        <div class="karte">
+          <p class="abschnitt">Rückblick – Vergleich</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+            <div><label>Datum 1</label><input type="date" id="vgl-datum-1" style="margin-bottom:0;" onchange="zeigeVergleich()"/></div>
+            <div><label>Datum 2</label><input type="date" id="vgl-datum-2" style="margin-bottom:0;" onchange="zeigeVergleich()"/></div>
+          </div>
+          <div id="vgl-ergebnis" style="font-size:14px;color:#888;padding:8px 0;">Wähle zwei Daten zum Vergleichen.</div>
+        </div>
+        <div class="karte volle-breite">
+          <p class="abschnitt">Gewichtsverlauf</p>
+          <div class="chart-box"><canvas id="chart"></canvas></div>
+        </div>
       </div>
     </div>
 
