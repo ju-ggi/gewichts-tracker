@@ -164,7 +164,10 @@ textarea{resize:vertical;min-height:70px;}
         </div>
         <div class="karte volle-breite">
           <p class="abschnitt">Gewichtsverlauf</p>
-          <div class="chart-box"><canvas id="chart"></canvas></div>
+          <div class="chart-box" style="position:relative;">
+            <canvas id="chart"></canvas>
+            <div id="chart-tooltip" style="display:none;position:absolute;top:8px;background:white;border:0.5px solid rgba(0,0,0,0.15);border-radius:8px;padding:6px 10px;font-size:12px;pointer-events:none;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.1);"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -510,21 +513,92 @@ function zeigeWasser() {
 function zeigeChart(p) {
   const ctx = document.getElementById('chart').getContext('2d');
   if (chart) chart.destroy();
+
+  const cursorPlugin = {
+    id: 'cursorPlugin',
+    afterDraw(chart) {
+      if (chart._cursorX === undefined) return;
+      const ctx = chart.ctx;
+      const x = chart._cursorX;
+      const top = chart.chartArea.top;
+      const bottom = chart.chartArea.bottom;
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(x, top);
+      ctx.lineTo(x, bottom);
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#E24B4A';
+      ctx.stroke();
+      ctx.restore();
+    }
+  };
+
   chart = new Chart(ctx, {
     type: 'line',
     data: {
-      labels: p.eintraege.map(e => e.datum.slice(5)),
-      datasets: [{ data: p.eintraege.map(e => e.gewicht), borderColor: '#1D9E75', backgroundColor: 'rgba(29,158,117,0.08)', borderWidth: 2, pointRadius: 3, tension: 0.3, fill: true }]
+      labels: p.eintraege.map(e => e.datum),
+      datasets: [{ data: p.eintraege.map(e => e.gewicht), borderColor: '#1D9E75', backgroundColor: 'rgba(29,158,117,0.08)', borderWidth: 2, pointRadius: 4, tension: 0.3, fill: true }]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          enabled: true,
+          callbacks: {
+            title: items => items[0].label,
+            label: item => item.parsed.y.toFixed(1) + ' kg'
+          }
+        }
+      },
       scales: {
         y: { ticks: { font: { size: 11 }, color: '#888' }, grid: { color: 'rgba(0,0,0,0.05)' } },
         x: { ticks: { font: { size: 11 }, color: '#888', maxTicksLimit: 7 }, grid: { display: false } }
+      },
+      onHover: (event, elements, chart) => {
+        if (event.native) {
+          const rect = chart.canvas.getBoundingClientRect();
+          const clientX = event.native.touches ? event.native.touches[0].clientX : event.native.clientX;
+          chart._cursorX = clientX - rect.left;
+          chart.draw();
+        }
       }
-    }
+    },
+    plugins: [cursorPlugin]
   });
+
+  const canvas = document.getElementById('chart');
+  const tooltip = document.getElementById('chart-tooltip');
+
+  function handleMove(e) {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const x = clientX - rect.left;
+    const chartArea = chart.chartArea;
+    if (x < chartArea.left || x > chartArea.right) return;
+
+    const pct = (x - chartArea.left) / (chartArea.right - chartArea.left);
+    const idx = Math.round(pct * (p.eintraege.length - 1));
+    const eintrag = p.eintraege[Math.min(Math.max(idx, 0), p.eintraege.length - 1)];
+
+    chart._cursorX = x;
+    chart.draw();
+
+    tooltip.style.display = 'block';
+    tooltip.style.left = Math.min(x + 10, rect.width - 120) + 'px';
+    tooltip.innerHTML = `<strong>${eintrag.datum}</strong><br>${eintrag.gewicht.toFixed(1)} kg`;
+  }
+
+  function handleLeave() {
+    chart._cursorX = undefined;
+    chart.draw();
+    tooltip.style.display = 'none';
+  }
+
+  canvas.addEventListener('mousemove', handleMove);
+  canvas.addEventListener('touchmove', e => { e.preventDefault(); handleMove(e); }, { passive: false });
+  canvas.addEventListener('mouseleave', handleLeave);
+  canvas.addEventListener('touchend', handleLeave);
 }
 
 function toggleTag(btn) {
