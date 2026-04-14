@@ -241,12 +241,28 @@ textarea{resize:vertical;min-height:70px;}
       </div>
     </div>
 
+    <div id="tab-ki" class="versteckt">
+      <p class="seiten-titel">KI-Auswertung</p>
+      <div class="karte">
+        <p class="abschnitt">Persönliche Analyse</p>
+        <p style="font-size:13px;color:#888;margin-bottom:12px;">Claude analysiert deinen Verlauf und gibt dir eine kurze Einschätzung.</p>
+        <button class="btn primaer" id="ki-btn" onclick="starteKIAuswertung()">Auswertung starten</button>
+      </div>
+      <div id="ki-ergebnis" class="versteckt">
+        <div class="karte">
+          <p class="abschnitt">Deine Auswertung</p>
+          <div id="ki-text" style="font-size:14px;line-height:1.7;color:#1a1a1a;white-space:pre-wrap;"></div>
+        </div>
+      </div>
+    </div>
+
   </div>
   <div class="bottom-nav">
     <button class="nav-btn aktiv" id="nav-uebersicht" onclick="wechsleTab('uebersicht')"><span class="nav-icon">&#128200;</span>Übersicht</button>
     <button class="nav-btn" id="nav-eintragen" onclick="wechsleTab('eintragen')"><span class="nav-icon">&#43;</span>Eintragen</button>
     <button class="nav-btn" id="nav-koerper" onclick="wechsleTab('koerper')"><span class="nav-icon">&#128170;</span>Körper</button>
     <button class="nav-btn" id="nav-verlauf" onclick="wechsleTab('verlauf')"><span class="nav-icon">&#128203;</span>Verlauf</button>
+    <button class="nav-btn" id="nav-ki" onclick="wechsleTab('ki')"><span class="nav-icon">&#129504;</span>KI</button>
     <button class="nav-btn" id="nav-profil" onclick="wechsleTab('profil')"><span class="nav-icon">&#128100;</span>Profil</button>
   </div>
 </div>
@@ -328,7 +344,7 @@ function profilSpeichern() {
 }
 
 function wechsleTab(tab) {
-  ['uebersicht','eintragen','verlauf','profil','koerper'].forEach(t => {
+  ['uebersicht','eintragen','verlauf','profil','koerper','ki'].forEach(t => {
     document.getElementById('tab-' + t).classList.toggle('versteckt', t !== tab);
     document.getElementById('nav-' + t).classList.toggle('aktiv', t === tab);
   });
@@ -655,6 +671,60 @@ function zeigeKoerperVerlauf() {
       ${notiz}
     </div>`;
   }).join('');
+}
+
+async function starteKIAuswertung() {
+  const p = aktivesProfile();
+  const btn = document.getElementById('ki-btn');
+  const ergebnis = document.getElementById('ki-ergebnis');
+  const text = document.getElementById('ki-text');
+
+  btn.textContent = 'Wird analysiert...';
+  btn.disabled = true;
+  ergebnis.classList.add('versteckt');
+
+  const letzt = p.eintraege[p.eintraege.length-1].gewicht;
+  const abgen = Math.max(0, p.start - letzt).toFixed(1);
+  const gesamt = p.start - p.ziel;
+  const pct = Math.min(100, Math.round((abgen / gesamt) * 100));
+  const eintraege = p.eintraege.length;
+  const ausnahmen = p.eintraege.flatMap(e => e.typen || []);
+  const haeufig = ausnahmen.reduce((acc, t) => { acc[t] = (acc[t]||0)+1; return acc; }, {});
+  const top = Object.entries(haeufig).sort((a,b) => b[1]-a[1]).slice(0,3).map(e => e[0]).join(', ');
+
+  const prompt = `Du bist ein einfühlsamer Gesundheitscoach. Analysiere folgende Daten und gib eine kurze, motivierende Zusammenfassung auf Deutsch (max. 150 Wörter). Keine Listen, nur fließender Text.
+
+Person: ${p.name}
+Startgewicht: ${p.start} kg
+Aktuelles Gewicht: ${letzt} kg
+Zielgewicht: ${p.ziel} kg
+Abgenommen: ${abgen} kg (${pct}% des Ziels erreicht)
+Anzahl Einträge: ${eintraege}
+Häufige Ausnahmen: ${top || 'keine'}
+
+Gib eine persönliche, motivierende Einschätzung des Fortschritts.`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await response.json();
+    const antwort = data.content && data.content[0] ? data.content[0].text : 'Keine Antwort erhalten.';
+    text.textContent = antwort;
+    ergebnis.classList.remove('versteckt');
+  } catch(e) {
+    text.textContent = 'Fehler bei der Verbindung zur KI. Bitte versuche es später erneut.';
+    ergebnis.classList.remove('versteckt');
+  }
+
+  btn.textContent = 'Neue Auswertung starten';
+  btn.disabled = false;
 }
 
 function exportCSV() {
