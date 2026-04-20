@@ -1204,11 +1204,37 @@ function zeigeVerlauf() {
     const kcal = e.kalorien ? `<div class="eintrag-tags">🍽 ${e.kalorien} kcal</div>` : '';
     const uhrzeitAnzeige = e.uhrzeit ? `<span style="font-size:11px;color:#bbb;margin-left:6px;">⏱ ${e.uhrzeit} Uhr</span>` : '';
     const notiz = e.notiz ? `<div class="eintrag-notiz">${e.notiz}</div>` : '';
+    const originalIndex = p.eintraege.findIndex(x => x.datum === e.datum && x.gewicht === e.gewicht);
     return `<div class="eintrag-item">
-      <div><div class="eintrag-datum">${e.datum}${uhrzeitAnzeige}</div>${typen}${stimmung}${kcal}${notiz}</div>
-      <div><div class="eintrag-gewicht">${e.gewicht.toFixed(1)} kg</div>${diff}</div>
+      <div style="flex:1;">
+        <div class="eintrag-datum">${e.datum}${uhrzeitAnzeige}</div>
+        ${typen}${stimmung}${kcal}${notiz}
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+        <div class="eintrag-gewicht">${e.gewicht.toFixed(1)} kg</div>
+        ${diff}
+        <button onclick="eintragLoeschen(${originalIndex})" style="background:none;border:none;color:#ccc;cursor:pointer;font-size:16px;padding:2px 4px;line-height:1;" title="Eintrag löschen">🗑</button>
+      </div>
     </div>`;
   }).join('');
+}
+
+function eintragLoeschen(index) {
+  const p = aktivesProfile();
+  const eintrag = p.eintraege[index];
+  if (!eintrag) return;
+  const bestaetigt = confirm(
+    'Eintrag wirklich löschen?\n\n' +
+    'Datum: ' + eintrag.datum + (eintrag.uhrzeit ? ' · ' + eintrag.uhrzeit + ' Uhr' : '') + '\n' +
+    'Gewicht: ' + eintrag.gewicht.toFixed(1) + ' kg\n\n' +
+    'Diese Aktion kann nicht rückgängig gemacht werden.'
+  );
+  if (!bestaetigt) return;
+  const profile = ladeProfile();
+  profile[aktivesProfilIndex].eintraege.splice(index, 1);
+  speichereProfile(profile);
+  zeigeToast('🗑 Eintrag gelöscht');
+  zeigeVerlauf();
 }
 
 // ========== KALORIEN-VERLAUF (im Profil) ==========
