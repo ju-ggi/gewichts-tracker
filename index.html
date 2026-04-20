@@ -435,6 +435,14 @@ function formatDatum(iso) {
   return `${d}.${m}.${y}`;
 }
 
+function jetztuhrzeit() {
+  // Gibt aktuelle Uhrzeit als "HH:MM" zurück, z.B. "07:32"
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2, '0');   // padStart stellt sicher: 7 → "07"
+  const m = String(now.getMinutes()).padStart(2, '0');
+  return `${h}:${m}`;
+}
+
 // ========== TOAST-FEEDBACK ==========
 
 function zeigeToast(text = '✓ Gespeichert', farbe = '#0F6E56') {
@@ -540,7 +548,7 @@ function initialisiereEintragenTab() {
   datumManuell = false;
   document.getElementById('e-datum').value = heute();
   document.getElementById('e-datum').classList.add('versteckt');
-  document.getElementById('datum-anzeige').textContent = 'Heute, ' + formatDatum(heute());
+  document.getElementById('datum-anzeige').textContent = 'Heute, ' + formatDatum(heute()) + ' · ' + jetztuhrzeit() + ' Uhr';
   document.getElementById('datum-toggle-btn').textContent = 'Anderes Datum wählen';
   // Eigene Tags des Profils anzeigen
   ladeEigeneTags();
@@ -561,7 +569,7 @@ function toggleDatumFeld() {
     feld.classList.add('versteckt');
     anzeige.style.display = '';
     feld.value = heute();
-    anzeige.textContent = 'Heute, ' + formatDatum(heute());
+    anzeige.textContent = 'Heute, ' + formatDatum(heute()) + ' · ' + jetztuhrzeit() + ' Uhr';
     btn.textContent = 'Anderes Datum wählen';
   }
 }
@@ -659,7 +667,7 @@ function schnellSpeichern() {
   const h = heute();
   // Bestehenden heutigen Eintrag überschreiben oder neu anlegen
   const idx = p.eintraege.findIndex(e => e.datum === h);
-  const eintrag = { datum: h, gewicht: val, typen: [], notiz: '', kalorien: null, stimmung: null };
+  const eintrag = { datum: h, gewicht: val, uhrzeit: jetztuhrzeit(), typen: [], notiz: '', kalorien: null, stimmung: null };
   if (idx >= 0) p.eintraege[idx] = eintrag;
   else { p.eintraege.push(eintrag); p.eintraege.sort((a,b) => a.datum.localeCompare(b.datum)); }
   speichereProfile(profile);
@@ -685,6 +693,7 @@ function allesSpreichern() {
   const idx = p.eintraege.findIndex(e => e.datum === datum);
   const eintrag = {
     datum,
+    uhrzeit: datumManuell ? null : jetztuhrzeit(), // Uhrzeit nur bei "heute"-Einträgen automatisch
     gewicht: gewichtVal,
     typen: [...gewaehlteTypen],
     notiz,
@@ -1193,9 +1202,10 @@ function zeigeVerlauf() {
     const typen = e.typen && e.typen.length ? `<div class="eintrag-tags">${e.typen.join(' · ')}</div>` : '';
     const stimmung = e.stimmung ? `<div class="eintrag-tags">${e.stimmung}</div>` : '';
     const kcal = e.kalorien ? `<div class="eintrag-tags">🍽 ${e.kalorien} kcal</div>` : '';
+    const uhrzeitAnzeige = e.uhrzeit ? `<span style="font-size:11px;color:#bbb;margin-left:6px;">⏱ ${e.uhrzeit} Uhr</span>` : '';
     const notiz = e.notiz ? `<div class="eintrag-notiz">${e.notiz}</div>` : '';
     return `<div class="eintrag-item">
-      <div><div class="eintrag-datum">${e.datum}</div>${typen}${stimmung}${kcal}${notiz}</div>
+      <div><div class="eintrag-datum">${e.datum}${uhrzeitAnzeige}</div>${typen}${stimmung}${kcal}${notiz}</div>
       <div><div class="eintrag-gewicht">${e.gewicht.toFixed(1)} kg</div>${diff}</div>
     </div>`;
   }).join('');
@@ -1257,11 +1267,13 @@ function zeigeProfil() {
 
 function exportCSV() {
   const p = aktivesProfile();
-  const zeilen = [['Datum','Gewicht (kg)','Kalorien','Stimmung','Bauch (cm)','Hüfte (cm)','Brust (cm)','Oberschenkel (cm)','Tags','Notiz']];
+  const zeilen = [['Datum','Uhrzeit','Gewicht (kg)','Kalorien','Stimmung','Bauch (cm)','Hüfte (cm)','Brust (cm)','Oberschenkel (cm)','Tags','Notiz']];
   p.eintraege.forEach(e => {
     const k = p.koerper ? p.koerper.find(k => k.datum === e.datum) : null;
     zeilen.push([
-      e.datum, e.gewicht.toFixed(1),
+      e.datum,
+      e.uhrzeit ? e.uhrzeit + ' Uhr' : '',
+      e.gewicht.toFixed(1),
       e.kalorien || '',
       e.stimmung || '',
       k && k.bauch ? k.bauch : '',
@@ -1290,7 +1302,8 @@ function exportPDF() {
   const zeilen = p.eintraege.map(e => {
     const k = p.koerper ? p.koerper.find(k => k.datum === e.datum) : null;
     return `<tr>
-      <td>${e.datum}</td><td>${e.gewicht.toFixed(1)} kg</td>
+      <td>${e.datum}${e.uhrzeit ? '<br><span style="color:#aaa;font-size:11px;">⏱ ' + e.uhrzeit + ' Uhr</span>' : ''}</td>
+      <td>${e.gewicht.toFixed(1)} kg</td>
       <td>${e.kalorien ? e.kalorien + ' kcal' : '–'}</td>
       <td>${k && k.bauch ? k.bauch + ' cm' : '–'}</td>
       <td>${k && k.huefte ? k.huefte + ' cm' : '–'}</td>
