@@ -1,0 +1,594 @@
+/* =========================================
+   GEWICHTS-TRACKER – Stylesheet
+   Hier ist NUR das Aussehen definiert.
+   Keine Logik, keine Daten – nur Design.
+   ========================================= */
+
+/* Grundreset: Browser-Abstände entfernen */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Grundlayout der Seite */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f5f5f0;
+  color: #1a1a1a;
+  min-height: 100vh;
+}
+
+/* Hilfklasse: Element verstecken */
+.versteckt { display: none !important; }
+
+/* Hilfklasse: Inhalt zentrieren (Login, Profil-Auswahl) */
+.zentriert {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 1rem;
+}
+
+/* Die weiße Karte beim Login und Profil-Setup */
+.setup-karte {
+  background: white;
+  border-radius: 20px;
+  padding: 2rem 1.5rem;
+  width: 100%;
+  max-width: 380px;
+  border: 0.5px solid rgba(0,0,0,0.08);
+}
+
+/* Logo-Emoji oben auf der Karte */
+.logo {
+  font-size: 40px;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+/* Großer Titeltext */
+.titel {
+  font-size: 20px;
+  font-weight: 500;
+  text-align: center;
+  margin-bottom: 0.25rem;
+}
+
+/* Grauer Untertitel */
+.untertitel {
+  font-size: 13px;
+  color: #888;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+/* Haupt-Container der App (nach dem Login) */
+.app {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+  padding-bottom: 80px; /* Platz für die untere Navigation */
+}
+
+/* Seitentitel (z.B. "Übersicht", "Verlauf") */
+.seiten-titel {
+  font-size: 22px;
+  font-weight: 500;
+  margin-bottom: 1.25rem;
+}
+
+/* Weiße Inhaltskarte */
+.karte {
+  background: white;
+  border: 0.5px solid rgba(0,0,0,0.1);
+  border-radius: 16px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+/* Kleiner grauer Abschnittstitel innerhalb einer Karte */
+.abschnitt {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+/* Große Zahl (z.B. aktuelles Gewicht) */
+.gross {
+  font-size: 36px;
+  font-weight: 500;
+}
+
+/* Einheit neben der großen Zahl (z.B. "kg") */
+.einheit {
+  font-size: 16px;
+  color: #888;
+  margin-left: 4px;
+}
+
+/* 2-spaltiges Raster für Metriken */
+.metrik-raster {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 1rem;
+}
+
+/* Einzelne Metrik-Box (grauer Hintergrund) */
+.metrik {
+  background: #f5f5f0;
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+}
+
+.metrik-label {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 4px;
+}
+
+.metrik-wert {
+  font-size: 20px;
+  font-weight: 500;
+}
+
+/* Grüne Schrift für positive Werte */
+.metrik-wert.gruen { color: #0F6E56; }
+
+/* Fortschrittsbalken (z.B. Ziel-Erreichung) */
+.balken {
+  background: #e8e8e8;
+  border-radius: 99px;
+  height: 8px;
+  margin: 10px 0 6px;
+  overflow: hidden;
+}
+
+.balken-fill {
+  background: #1D9E75;
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.6s ease; /* Weiche Animation beim Laden */
+}
+
+.balken-text {
+  font-size: 12px;
+  color: #888;
+}
+
+/* Buttons */
+.btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 0.5px solid rgba(0,0,0,0.15);
+  background: transparent;
+  color: #1a1a1a;
+  font-size: 15px;
+  cursor: pointer;
+  margin-bottom: 8px;
+  font-family: inherit;
+}
+
+.btn:hover { background: #f5f5f0; }
+
+/* Primär-Button (grün, ausgefüllt) */
+.btn.primaer {
+  background: #1D9E75;
+  color: white;
+  border-color: #1D9E75;
+  font-weight: 500;
+}
+
+.btn.primaer:hover { background: #0F6E56; }
+
+/* Gefahren-Button (rot, z.B. Löschen) */
+.btn.gefahr {
+  background: #993C1D;
+  color: white;
+  border-color: #993C1D;
+}
+
+.btn.gefahr:hover { background: #7a2f15; }
+
+/* Formular-Labels */
+label {
+  font-size: 13px;
+  color: #888;
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* Alle Eingabefelder */
+input, textarea, select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 0.5px solid rgba(0,0,0,0.2);
+  background: white;
+  color: #1a1a1a;
+  font-size: 15px;
+  margin-bottom: 12px;
+  font-family: inherit;
+}
+
+/* Fokus-Zustand: grüner Rahmen */
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: #1D9E75;
+  box-shadow: 0 0 0 3px rgba(29,158,117,0.1);
+}
+
+/* Fehler-Zustand: roter Rahmen */
+input.fehler-feld { border-color: #993C1D !important; }
+
+textarea {
+  resize: vertical;
+  min-height: 70px;
+}
+
+/* Fehlermeldung unter Eingabefeldern */
+.fehler {
+  color: #993C1D;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+/* Tag-Raster (Stimmung, Tages-Tags) */
+.tag-raster {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 12px;
+}
+
+/* Einzelner Tag-Button (Pill-Form) */
+.tag {
+  padding: 6px 12px;
+  border: 0.5px solid rgba(0,0,0,0.15);
+  border-radius: 99px;
+  font-size: 13px;
+  cursor: pointer;
+  background: transparent;
+  color: #555;
+  font-family: inherit;
+}
+
+/* Aktive Tags – Farbe je nach Stimmung */
+.tag.aktiv                   { background: #e1f5ee; color: #0F6E56; border-color: #9FE1CB; }
+.tag.stimmung-gut.aktiv      { background: #e1f5ee; color: #0F6E56; border-color: #9FE1CB; }
+.tag.stimmung-neutral.aktiv  { background: #faeeda; color: #633806; border-color: #FAC775; }
+.tag.stimmung-schlecht.aktiv { background: #fde8e3; color: #993C1D; border-color: #F4A090; }
+
+/* Verlaufs-Einträge */
+.eintrag-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 12px 0;
+  border-bottom: 0.5px solid rgba(0,0,0,0.08);
+}
+
+.eintrag-item:last-child { border-bottom: none; }
+.eintrag-datum  { font-size: 13px; color: #888; }
+.eintrag-tags   { font-size: 11px; color: #aaa; margin-top: 2px; }
+.eintrag-notiz  { font-size: 11px; color: #bbb; margin-top: 2px; font-style: italic; }
+.eintrag-gewicht{ font-size: 16px; font-weight: 500; text-align: right; }
+.eintrag-diff   { font-size: 12px; margin-top: 2px; text-align: right; }
+.eintrag-diff.runter { color: #0F6E56; } /* Gewicht gesunken = grün */
+.eintrag-diff.hoch   { color: #993C1D; } /* Gewicht gestiegen = rot */
+
+/* Meilenstein-Banner */
+.meilenstein {
+  background: #e1f5ee;
+  border: 0.5px solid #9FE1CB;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: #0F6E56;
+}
+
+/* Diagramm-Container */
+.chart-box {
+  position: relative;
+  height: 220px;
+  margin-top: 8px;
+}
+
+/* Untere Navigation (fixiert am Bildschirmrand) */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  border-top: 0.5px solid rgba(0,0,0,0.1);
+  display: flex;
+  padding: 8px 0 16px;
+}
+
+.nav-btn {
+  flex: 1;
+  background: none;
+  border: none;
+  font-size: 11px;
+  color: #888;
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+/* Aktiver Tab in der Navigation */
+.nav-btn.aktiv { color: #1D9E75; }
+
+.nav-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+/* Profil-Listeneinträge */
+.profil-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 0.5px solid rgba(0,0,0,0.08);
+  cursor: pointer;
+}
+
+.profil-item:last-child { border-bottom: none; }
+
+/* Runder Avatar mit Initialen */
+.profil-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #e1f5ee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 500;
+  color: #0F6E56;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+/* Zurück-Button (kein sichtbarer Rahmen) */
+.zurueck {
+  background: none;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0;
+  margin-bottom: 1rem;
+  font-family: inherit;
+}
+
+/* Hinweis-Boxen (gelb, grün, rot) */
+.hinweis {
+  background: #faeeda;
+  border: 0.5px solid #FAC775;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 1rem;
+  font-size: 13px;
+  color: #633806;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.hinweis.gruen { background: #e1f5ee; border-color: #9FE1CB; color: #0F6E56; }
+.hinweis.rot   { background: #fde8e3; border-color: #F4A090; color: #993C1D; }
+
+/* Wasser-Gläser */
+.wasser-gläser {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.glas {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  border: 0.5px solid rgba(0,0,0,0.15);
+  background: #f5f5f0;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.glas.voll { background: #B5D4F4; border-color: #378ADD; }
+.wasser-text { font-size: 13px; color: #888; }
+
+/* Ampel-Anzeige (grün/gelb/rot) */
+.ampel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.ampel.gruen { background: #e1f5ee; color: #0F6E56; border: 0.5px solid #9FE1CB; }
+.ampel.gelb  { background: #faeeda; color: #633806; border: 0.5px solid #FAC775; }
+.ampel.rot   { background: #fde8e3; color: #993C1D; border: 0.5px solid #F4A090; }
+
+.ampel-kreis { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+.ampel.gruen .ampel-kreis { background: #1D9E75; }
+.ampel.gelb  .ampel-kreis { background: #FAC775; }
+.ampel.rot   .ampel-kreis { background: #993C1D; }
+
+/* Toast-Feedback (kurze Meldung unten) */
+#toast {
+  position: fixed;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #0F6E56;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 99px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+#toast.sichtbar { opacity: 1; }
+
+/* Schnelleingabe auf der Übersicht */
+.schnell-eingabe {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  margin-top: 8px;
+}
+
+.schnell-eingabe input  { margin-bottom: 0; flex: 1; }
+.schnell-eingabe button {
+  flex-shrink: 0;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: none;
+  background: #1D9E75;
+  color: white;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+}
+.schnell-eingabe button:hover { background: #0F6E56; }
+
+/* Datum-Toggle Link */
+.datum-toggle {
+  font-size: 12px;
+  color: #1D9E75;
+  cursor: pointer;
+  margin-bottom: 8px;
+  text-decoration: underline;
+  background: none;
+  border: none;
+  font-family: inherit;
+  padding: 0;
+}
+
+/* Wochenzusammenfassung */
+.woche-karte {
+  background: #f5f5f0;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 8px;
+}
+
+.woche-karte h4  { font-size: 14px; font-weight: 500; margin-bottom: 6px; }
+.woche-stat      { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0; color: #555; }
+
+/* Kalorientracker */
+.kcal-zeile {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 0.5px solid rgba(0,0,0,0.06);
+  font-size: 13px;
+}
+
+.kcal-datum { color: #888; }
+.kcal-wert  { font-weight: 500; }
+
+/* Haltegewicht-Badge */
+.haltegewicht-badge {
+  background: #e1f5ee;
+  color: #0F6E56;
+  border: 0.5px solid #9FE1CB;
+  border-radius: 99px;
+  font-size: 12px;
+  padding: 3px 10px;
+  display: inline-block;
+  margin-left: 8px;
+}
+
+/* Diagramm-Tabs (Gewicht / Bauch / Hüfte ...) */
+.chart-tab-reihe {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.chart-tab {
+  padding: 5px 12px;
+  border-radius: 99px;
+  border: 0.5px solid rgba(0,0,0,0.15);
+  background: transparent;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  color: #555;
+}
+
+.chart-tab.aktiv { background: #1D9E75; color: white; border-color: #1D9E75; }
+
+/* Eigene Tags hinzufügen */
+.eigener-tag-bereich { margin-top: 6px; }
+
+.eigener-tag-eingabe {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.eigener-tag-eingabe input  { margin-bottom: 0; flex: 1; }
+.eigener-tag-eingabe button {
+  flex-shrink: 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: none;
+  background: #f5f5f0;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* Seiten-Raster (einspaltig auf Mobil) */
+.seiten-raster {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+
+/* Ab 768px: zweispaltig (Tablet/Desktop) */
+@media (min-width: 768px) {
+  .seiten-raster              { grid-template-columns: 1fr 1fr; gap: 1rem; align-items: start; }
+  .seiten-raster .volle-breite{ grid-column: 1 / -1; }
+  .metrik-raster              { grid-template-columns: repeat(4, 1fr); }
+  .chart-box                  { height: 260px; }
+  .bottom-nav {
+    max-width: 1200px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 16px 16px 0 0;
+    border: 0.5px solid rgba(0,0,0,0.1);
+  }
+}
