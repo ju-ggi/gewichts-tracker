@@ -7,6 +7,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link rel="stylesheet" href="style.css"/>
 <script src="js/daten.js"></script>
+<script src="js/berechnung.js"></script>
 </head>
 <body>
 
@@ -601,14 +602,17 @@ function allesSpreichern() {
 function aktualisiereDashboard() {
   const p = aktivesProfile();
   if (!p) return;
-  const letzt = p.eintraege[p.eintraege.length-1].gewicht;
-  const abgen = Math.max(0, p.start - letzt);
-  const gesamt = p.start - p.ziel;
-  const pct = Math.min(100, Math.round((abgen / gesamt) * 100));
-  const rest = Math.max(0, letzt - p.ziel);
-  const bmi = (letzt / ((p.groesse / 100) ** 2)).toFixed(1);
-  const h = heute();
 
+  // --- Berechnungen (aus berechnung.js) ---
+  const letzt  = p.eintraege[p.eintraege.length - 1].gewicht;
+  const abgen  = berechneAbgenommen(p.start, letzt);
+  const gesamt = p.start - p.ziel;
+  const pct    = berechneFortschrittProzent(abgen, gesamt);
+  const rest   = Math.max(0, letzt - p.ziel);
+  const bmi    = berechneBMI(letzt, p.groesse).toFixed(1);
+  const h      = heute();
+
+  // --- Anzeige ---
   document.getElementById('begruessung').textContent = 'Hallo, ' + p.name + '!';
   document.getElementById('akt-gewicht').textContent = letzt.toFixed(1);
   document.getElementById('m-abgenommen').textContent = abgen.toFixed(1) + ' kg';
@@ -627,11 +631,11 @@ function aktualisiereDashboard() {
   const heuteEintrag = p.eintraege.some(e => e.datum === h);
   document.getElementById('kein-eintrag-hinweis').classList.toggle('versteckt', heuteEintrag);
 
-  // Meilensteine
+  // Meilensteine (aus berechnung.js)
   const ms = document.getElementById('meilensteine');
   ms.innerHTML = '';
-  [5,10,15,20,25,30,40,50].forEach(m => {
-    if (abgen >= m) ms.innerHTML += `<div class="meilenstein">&#127942; Meilenstein: ${m} kg abgenommen!</div>`;
+  berechneMeilensteine(abgen).forEach(m => {
+    ms.innerHTML += `<div class="meilenstein">&#127942; Meilenstein: ${m} kg abgenommen!</div>`;
   });
 
   // Wochenzusammenfassung (nur montags)
@@ -639,7 +643,7 @@ function aktualisiereDashboard() {
   if (heute_obj.getDay() === 1) zeigeWochenzusammenfassung(p);
   else document.getElementById('wochen-summary').classList.add('versteckt');
 
-  zeigeAmpel(p, abgen, gesamt, letzt);
+  zeigeAmpel(p);
   zeigeWasser(p);
   zeigePrognose(p);
   zeigePlateau(p);
@@ -648,33 +652,14 @@ function aktualisiereDashboard() {
 
 // ========== AMPEL ==========
 
-function zeigeAmpel(p, abgen, gesamt, letzt) {
+function zeigeAmpel(p) {
   const container = document.getElementById('ampel-anzeige');
-  const sortiert = [...p.eintraege].sort((a,b) => a.datum.localeCompare(b.datum));
-  if (sortiert.length < 3) { container.classList.add('versteckt'); return; }
+  // Berechnung aus berechnung.js
+  const trend = berechneTrend(p.eintraege, p.haltegewichtModus);
+  if (!trend) { container.classList.add('versteckt'); return; }
 
-  const letzteWoche = sortiert.slice(-7);
-  const trendVal = letzteWoche.length > 1
-    ? letzteWoche[letzteWoche.length-1].gewicht - letzteWoche[0].gewicht
-    : 0;
-
-  let klasse, symbol, text;
-
-  if (p.haltegewichtModus) {
-    const toleranz = Math.abs(trendVal) < 0.5;
-    klasse = toleranz ? 'gruen' : 'gelb';
-    symbol = toleranz ? '✓' : '⚠';
-    text = toleranz
-      ? 'Haltephase: Gewicht stabil – super!'
-      : 'Haltephase: Gewicht schwankt – im Auge behalten.';
-  } else {
-    if (trendVal < -0.2) { klasse='gruen'; symbol='↓'; text='Trend: Du nimmst ab – weiter so!'; }
-    else if (trendVal < 0.3) { klasse='gelb'; symbol='→'; text='Trend: Kaum Veränderung in den letzten 7 Tagen – dranblieben!'; }
-    else { klasse='rot'; symbol='↑'; text='Trend: Leichte Zunahme diese Woche – aufpassen!'; }
-  }
-
-  container.className = 'ampel ' + klasse + ' volle-breite';
-  container.innerHTML = `<div class="ampel-kreis"></div><span>${symbol} ${text}</span>`;
+  container.className = 'ampel ' + trend.klasse + ' volle-breite';
+  container.innerHTML = `<div class="ampel-kreis"></div><span>${trend.symbol} ${trend.text}</span>`;
   container.classList.remove('versteckt');
 }
 
@@ -682,35 +667,24 @@ function zeigeAmpel(p, abgen, gesamt, letzt) {
 
 function zeigeWochenzusammenfassung(p) {
   const container = document.getElementById('wochen-summary');
-  const heute_obj = new Date();
-  const vorWoche = new Date(heute_obj);
-  vorWoche.setDate(vorWoche.getDate() - 7);
-  const vorWocheStr = vorWoche.toISOString().split('T')[0];
-  const hStr = heute_obj.toISOString().split('T')[0];
 
-  const wochenEintraege = p.eintraege.filter(e => e.datum >= vorWocheStr && e.datum <= hStr);
-  if (wochenEintraege.length < 2) { container.classList.add('versteckt'); return; }
+  // Berechnung aus berechnung.js
+  const woche = berechneWoche(p.eintraege);
 
-  const erster = wochenEintraege[0];
-  const letzter = wochenEintraege[wochenEintraege.length-1];
-  const diff = letzter.gewicht - erster.gewicht;
-  const kcalEintraege = wochenEintraege.filter(e => e.kalorien);
-  const kcalDurchschnitt = kcalEintraege.length
-    ? Math.round(kcalEintraege.reduce((s,e) => s + e.kalorien, 0) / kcalEintraege.length)
-    : null;
-  const sportTage = wochenEintraege.filter(e => e.typen && e.typen.includes('Sport')).length;
-  const sign = diff <= 0 ? '' : '+';
-  const farbe = diff <= 0 ? '#0F6E56' : '#993C1D';
+  if (!woche) { container.classList.add('versteckt'); return; }
+
+  const sign  = woche.diff <= 0 ? '' : '+';
+  const farbe = woche.diff <= 0 ? '#0F6E56' : '#993C1D';
 
   container.className = 'karte volle-breite';
   container.innerHTML = `
     <p class="abschnitt">📊 Wochenzusammenfassung</p>
     <div class="woche-karte">
-      <div class="woche-stat"><span>Einträge diese Woche</span><strong>${wochenEintraege.length}</strong></div>
-      <div class="woche-stat"><span>Gewicht von → bis</span><strong>${erster.gewicht.toFixed(1)} → ${letzter.gewicht.toFixed(1)} kg</strong></div>
-      <div class="woche-stat"><span>Veränderung</span><strong style="color:${farbe}">${sign}${diff.toFixed(1)} kg</strong></div>
-      ${kcalDurchschnitt ? `<div class="woche-stat"><span>Ø Kalorien/Tag</span><strong>${kcalDurchschnitt} kcal</strong></div>` : ''}
-      ${sportTage > 0 ? `<div class="woche-stat"><span>Sport-Tage</span><strong>${sportTage}x</strong></div>` : ''}
+      <div class="woche-stat"><span>Einträge diese Woche</span><strong>${woche.anzahlEintraege}</strong></div>
+      <div class="woche-stat"><span>Gewicht von → bis</span><strong>${woche.erstesGewicht.toFixed(1)} → ${woche.letztesGewicht.toFixed(1)} kg</strong></div>
+      <div class="woche-stat"><span>Veränderung</span><strong style="color:${farbe}">${sign}${woche.diff.toFixed(1)} kg</strong></div>
+      ${woche.kcalDurchschnitt ? `<div class="woche-stat"><span>Ø Kalorien/Tag</span><strong>${woche.kcalDurchschnitt} kcal</strong></div>` : ''}
+      ${woche.sportTage > 0 ? `<div class="woche-stat"><span>Sport-Tage</span><strong>${woche.sportTage}x</strong></div>` : ''}
     </div>`;
   container.classList.remove('versteckt');
 }
@@ -719,44 +693,36 @@ function zeigeWochenzusammenfassung(p) {
 
 function zeigePrognose(p) {
   const inhalt = document.getElementById('prognose-inhalt');
+
   if (p.haltegewichtModus) {
     inhalt.innerHTML = '<span style="color:#0F6E56;">Du bist in der Haltephase – kein Abnahmeziel aktiv.</span>';
     return;
   }
-  if (p.eintraege.length < 3) {
+
+  // Berechnung aus berechnung.js
+  const prog = berechnePrognose(p.eintraege, p.ziel);
+
+  if (!prog && p.eintraege.length < 3) {
     inhalt.innerHTML = '<span style="color:#aaa;">Noch zu wenig Daten – bitte mehr Einträge hinzufügen.</span>';
     return;
   }
-  const sortiert = [...p.eintraege].sort((a,b) => a.datum.localeCompare(b.datum));
-  const letzt = sortiert[sortiert.length-1];
-  const erst = sortiert[0];
-  const tage = Math.max(1, (new Date(letzt.datum) - new Date(erst.datum)) / (1000*60*60*24));
-  const abnahmeProTag = (erst.gewicht - letzt.gewicht) / tage;
-
-  if (abnahmeProTag <= 0) {
+  if (!prog) {
     inhalt.innerHTML = '<span style="color:#993C1D;">Aktuell keine Abnahme erkennbar – weiter dranbleiben!</span>';
     return;
   }
 
-  const restKg = Math.max(0, letzt.gewicht - p.ziel);
-  const restTage = Math.round(restKg / abnahmeProTag);
-  const zielDatum = new Date();
-  zielDatum.setDate(zielDatum.getDate() + restTage);
-  const zielStr = zielDatum.toLocaleDateString('de-DE', {day:'2-digit',month:'2-digit',year:'numeric'});
-  const woche = (restTage / 7).toFixed(1);
-
   inhalt.innerHTML = `
     <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid rgba(0,0,0,0.08);">
       <span style="color:#888;">Abnahme pro Woche</span>
-      <span style="font-weight:500;">${(abnahmeProTag*7).toFixed(2)} kg</span>
+      <span style="font-weight:500;">${prog.abnahmeProWoche.toFixed(2)} kg</span>
     </div>
     <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid rgba(0,0,0,0.08);">
       <span style="color:#888;">Noch ca.</span>
-      <span style="font-weight:500;">${woche} Wochen</span>
+      <span style="font-weight:500;">${prog.restWochen} Wochen</span>
     </div>
     <div style="display:flex;justify-content:space-between;padding:6px 0;">
       <span style="color:#888;">Voraussichtlich am</span>
-      <span style="font-weight:500;color:#0F6E56;">${zielStr}</span>
+      <span style="font-weight:500;color:#0F6E56;">${prog.zielDatum}</span>
     </div>`;
 }
 
@@ -765,21 +731,17 @@ function zeigePrognose(p) {
 function zeigePlateau(p) {
   const hinweis = document.getElementById('plateau-hinweis');
   const text = document.getElementById('plateau-text');
-  if (p.haltegewichtModus || p.eintraege.length < 5) { hinweis.classList.add('versteckt'); return; }
 
-  const sortiert = [...p.eintraege].sort((a,b) => a.datum.localeCompare(b.datum));
-  const h = new Date();
-  const vor14 = new Date(); vor14.setDate(h.getDate() - 14);
-  const letzte14 = sortiert.filter(e => new Date(e.datum) >= vor14);
-  if (letzte14.length < 3) { hinweis.classList.add('versteckt'); return; }
+  if (p.haltegewichtModus) { hinweis.classList.add('versteckt'); return; }
 
-  const max = Math.max(...letzte14.map(e => e.gewicht));
-  const min = Math.min(...letzte14.map(e => e.gewicht));
-  const schwankung = max - min;
+  // Berechnung aus berechnung.js
+  const plateau = berechnePlateau(p.eintraege);
 
-  if (schwankung < 0.5) {
+  if (!plateau) { hinweis.classList.add('versteckt'); return; }
+
+  if (plateau.istPlateau) {
     hinweis.classList.remove('versteckt');
-    text.textContent = `Du bist seit ca. 2 Wochen in einem Plateau (${schwankung.toFixed(1)} kg Schwankung). Möchtest du dein Ziel oder deine Strategie anpassen?`;
+    text.textContent = `Du bist seit ca. 2 Wochen in einem Plateau (${plateau.schwankung.toFixed(1)} kg Schwankung). Möchtest du dein Ziel oder deine Strategie anpassen?`;
   } else {
     hinweis.classList.add('versteckt');
   }
