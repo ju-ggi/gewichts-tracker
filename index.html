@@ -1226,8 +1226,18 @@ function exportPDF() {
 
   const html = `<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"/>
   <title>Gewichtsverlauf ${p.name}</title>
-  <link rel="stylesheet" href="style.css"/>
-<script src="js/daten.js"></script></head><body>
+  <style>
+    body{font-family:Arial,sans-serif;padding:2rem;color:#1a1a1a;}
+    h1{font-size:22px;margin-bottom:0.25rem;}
+    .meta{font-size:13px;color:#888;margin-bottom:1.5rem;}
+    .zusammenfassung{display:flex;gap:2rem;margin-bottom:1.5rem;flex-wrap:wrap;}
+    .box{background:#f5f5f0;border-radius:8px;padding:0.75rem 1rem;}
+    .box-label{font-size:11px;color:#888;}
+    .box-wert{font-size:20px;font-weight:bold;}
+    table{width:100%;border-collapse:collapse;font-size:13px;}
+    th{background:#f5f5f0;padding:8px;text-align:left;border-bottom:1px solid #ddd;}
+    td{padding:7px 8px;border-bottom:0.5px solid #eee;}
+  </style></head><body>
   <h1>Gewichtsverlauf – ${p.name}</h1>
   <p class="meta">Erstellt am ${heuteDatum} &nbsp;|&nbsp; Modus: ${p.haltegewichtModus ? 'Haltephase' : 'Abnehmen'}</p>
   <div class="zusammenfassung">
