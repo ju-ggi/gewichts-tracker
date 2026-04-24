@@ -32,13 +32,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .btn:hover{background:#f5f5f0;}
 .btn.primaer{background:#1D9E75;color:white;border-color:#1D9E75;font-weight:500;}
 .btn.primaer:hover{background:#0F6E56;}
+.btn.gefahr{background:#993C1D;color:white;border-color:#993C1D;}
+.btn.gefahr:hover{background:#7a2f15;}
 label{font-size:13px;color:#888;display:block;margin-bottom:4px;}
 input,textarea,select{width:100%;padding:10px 12px;border-radius:10px;border:0.5px solid rgba(0,0,0,0.2);background:white;color:#1a1a1a;font-size:15px;margin-bottom:12px;font-family:inherit;}
+input:focus,textarea:focus,select:focus{outline:none;border-color:#1D9E75;box-shadow:0 0 0 3px rgba(29,158,117,0.1);}
+input.fehler-feld{border-color:#993C1D!important;}
 textarea{resize:vertical;min-height:70px;}
 .fehler{color:#993C1D;font-size:13px;margin-bottom:10px;}
 .tag-raster{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px;}
 .tag{padding:6px 12px;border:0.5px solid rgba(0,0,0,0.15);border-radius:99px;font-size:13px;cursor:pointer;background:transparent;color:#555;font-family:inherit;}
 .tag.aktiv{background:#e1f5ee;color:#0F6E56;border-color:#9FE1CB;}
+.tag.stimmung-gut.aktiv{background:#e1f5ee;color:#0F6E56;border-color:#9FE1CB;}
+.tag.stimmung-neutral.aktiv{background:#faeeda;color:#633806;border-color:#FAC775;}
+.tag.stimmung-schlecht.aktiv{background:#fde8e3;color:#993C1D;border-color:#F4A090;}
 .eintrag-item{display:flex;justify-content:space-between;align-items:flex-start;padding:12px 0;border-bottom:0.5px solid rgba(0,0,0,0.08);}
 .eintrag-item:last-child{border-bottom:none;}
 .eintrag-datum{font-size:13px;color:#888;}
@@ -58,13 +65,62 @@ textarea{resize:vertical;min-height:70px;}
 .profil-item:last-child{border-bottom:none;}
 .profil-avatar{width:40px;height:40px;border-radius:50%;background:#e1f5ee;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:500;color:#0F6E56;margin-right:12px;flex-shrink:0;}
 .zurueck{background:none;border:none;color:#888;cursor:pointer;font-size:14px;padding:0;margin-bottom:1rem;font-family:inherit;}
-.hinweis{background:#faeeda;border:0.5px solid #FAC775;border-radius:12px;padding:12px 14px;margin-bottom:1rem;font-size:13px;color:#633806;display:flex;align-items:center;gap:10px;}
+.hinweis{background:#faeeda;border:0.5px solid #FAC775;border-radius:12px;padding:12px 14px;margin-bottom:1rem;font-size:13px;color:#633806;display:flex;align-items:flex-start;gap:10px;}
+.hinweis.gruen{background:#e1f5ee;border-color:#9FE1CB;color:#0F6E56;}
+.hinweis.rot{background:#fde8e3;border-color:#F4A090;color:#993C1D;}
 .wasser-gläser{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0;}
 .glas{width:38px;height:38px;border-radius:8px;border:0.5px solid rgba(0,0,0,0.15);background:#f5f5f0;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;}
 .glas.voll{background:#B5D4F4;border-color:#378ADD;}
 .wasser-text{font-size:13px;color:#888;}
 
-/* Responsives Raster – 2 Spalten ab 768px */
+/* Ampel */
+.ampel{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:12px;margin-bottom:1rem;font-size:14px;font-weight:500;}
+.ampel.gruen{background:#e1f5ee;color:#0F6E56;border:0.5px solid #9FE1CB;}
+.ampel.gelb{background:#faeeda;color:#633806;border:0.5px solid #FAC775;}
+.ampel.rot{background:#fde8e3;color:#993C1D;border:0.5px solid #F4A090;}
+.ampel-kreis{width:14px;height:14px;border-radius:50%;flex-shrink:0;}
+.ampel.gruen .ampel-kreis{background:#1D9E75;}
+.ampel.gelb .ampel-kreis{background:#FAC775;}
+.ampel.rot .ampel-kreis{background:#993C1D;}
+
+/* Toast-Feedback */
+#toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#0F6E56;color:white;padding:10px 20px;border-radius:99px;font-size:14px;font-weight:500;z-index:9999;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;}
+#toast.sichtbar{opacity:1;}
+
+/* Schnelleingabe auf Übersicht */
+.schnell-eingabe{display:flex;gap:8px;align-items:flex-end;margin-top:8px;}
+.schnell-eingabe input{margin-bottom:0;flex:1;}
+.schnell-eingabe button{flex-shrink:0;padding:10px 16px;border-radius:10px;border:none;background:#1D9E75;color:white;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;}
+.schnell-eingabe button:hover{background:#0F6E56;}
+
+/* Datum-Toggle */
+.datum-toggle{font-size:12px;color:#1D9E75;cursor:pointer;margin-bottom:8px;text-decoration:underline;background:none;border:none;font-family:inherit;padding:0;}
+
+/* Wochenzusammenfassung */
+.woche-karte{background:#f5f5f0;border-radius:12px;padding:1rem;margin-bottom:8px;}
+.woche-karte h4{font-size:14px;font-weight:500;margin-bottom:6px;}
+.woche-stat{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;color:#555;}
+
+/* Kalorientracker */
+.kcal-zeile{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid rgba(0,0,0,0.06);font-size:13px;}
+.kcal-datum{color:#888;}
+.kcal-wert{font-weight:500;}
+
+/* Haltegewicht-Modus */
+.haltegewicht-badge{background:#e1f5ee;color:#0F6E56;border:0.5px solid #9FE1CB;border-radius:99px;font-size:12px;padding:3px 10px;display:inline-block;margin-left:8px;}
+
+/* Körpermaß-Diagramm Tabs */
+.chart-tab-reihe{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;}
+.chart-tab{padding:5px 12px;border-radius:99px;border:0.5px solid rgba(0,0,0,0.15);background:transparent;font-size:12px;cursor:pointer;font-family:inherit;color:#555;}
+.chart-tab.aktiv{background:#1D9E75;color:white;border-color:#1D9E75;}
+
+/* Eigene Tags */
+.eigener-tag-bereich{margin-top:6px;}
+.eigener-tag-eingabe{display:flex;gap:6px;margin-top:6px;}
+.eigener-tag-eingabe input{margin-bottom:0;flex:1;}
+.eigener-tag-eingabe button{flex-shrink:0;padding:10px 14px;border-radius:10px;border:none;background:#f5f5f0;font-size:13px;cursor:pointer;font-family:inherit;}
+
+/* Seiten-Raster */
 .seiten-raster{display:grid;grid-template-columns:1fr;gap:0;}
 @media(min-width:768px){
   .seiten-raster{grid-template-columns:1fr 1fr;gap:1rem;align-items:start;}
@@ -77,6 +133,10 @@ textarea{resize:vertical;min-height:70px;}
 </head>
 <body>
 
+<!-- Toast-Feedback -->
+<div id="toast">✓ Gespeichert</div>
+
+<!-- LOGIN -->
 <div id="login">
   <div class="zentriert">
     <div class="setup-karte">
@@ -91,6 +151,7 @@ textarea{resize:vertical;min-height:70px;}
   </div>
 </div>
 
+<!-- PROFILAUSWAHL -->
 <div id="profile" class="versteckt">
   <div class="zentriert">
     <div class="setup-karte">
@@ -103,6 +164,7 @@ textarea{resize:vertical;min-height:70px;}
   </div>
 </div>
 
+<!-- NEUES PROFIL -->
 <div id="neues-profil" class="versteckt">
   <div class="zentriert">
     <div class="setup-karte">
@@ -118,42 +180,75 @@ textarea{resize:vertical;min-height:70px;}
   </div>
 </div>
 
+<!-- HAUPT-APP -->
 <div id="app" class="versteckt">
   <div class="app">
 
+    <!-- ===== ÜBERSICHT ===== -->
     <div id="tab-uebersicht">
       <p class="seiten-titel" id="begruessung">Hallo!</p>
+
+      <!-- Ampel -->
+      <div id="ampel-anzeige" class="versteckt volle-breite"></div>
+
+      <!-- Hinweise -->
       <div id="kein-eintrag-hinweis" class="hinweis versteckt volle-breite">
-        <span style="font-size:20px;">&#9995;</span>
-        <span>Heute noch kein Eintrag. <strong style="cursor:pointer;text-decoration:underline;" onclick="wechsleTab('eintragen')">Jetzt eintragen</strong></span>
+        <span style="font-size:20px;flex-shrink:0;">&#9995;</span>
+        <div>
+          <span>Heute noch kein Eintrag.</span>
+          <div class="schnell-eingabe" style="margin-top:8px;">
+            <input type="number" id="schnell-gewicht" placeholder="Gewicht kg" step="0.1" min="30" max="300"/>
+            <button onclick="schnellSpeichern()">+ Eintragen</button>
+          </div>
+          <button class="datum-toggle" onclick="wechsleTab('eintragen')" style="margin-top:6px;">Ausführlich eintragen (Maße, Tags, Notiz…)</button>
+        </div>
       </div>
+
       <div id="plateau-hinweis" class="hinweis versteckt volle-breite">
-        <span style="font-size:20px;">&#9888;</span>
-        <span id="plateau-text"></span>
+        <span style="font-size:20px;flex-shrink:0;">&#9888;</span>
+        <div>
+          <span id="plateau-text"></span>
+          <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn" style="width:auto;padding:6px 14px;font-size:13px;margin-bottom:0;" onclick="zeigeZielanpassung()">Ziel anpassen</button>
+            <button class="btn" style="width:auto;padding:6px 14px;font-size:13px;margin-bottom:0;" onclick="document.getElementById('plateau-hinweis').classList.add('versteckt')">Schließen</button>
+          </div>
+        </div>
       </div>
+
       <div id="meilensteine" class="volle-breite"></div>
+
+      <!-- Wochenzusammenfassung (Montag) -->
+      <div id="wochen-summary" class="versteckt volle-breite"></div>
+
       <div class="seiten-raster">
         <div class="karte volle-breite">
-          <p class="abschnitt">Aktuelles Gewicht</p>
+          <p class="abschnitt">
+            Aktuelles Gewicht
+            <span id="haltegewicht-badge" class="haltegewicht-badge versteckt">Haltephase</span>
+          </p>
           <span class="gross" id="akt-gewicht">--</span><span class="einheit">kg</span>
           <div class="balken"><div class="balken-fill" id="balken-fill" style="width:0%"></div></div>
           <p class="balken-text" id="balken-text"></p>
         </div>
+
         <div class="metrik-raster volle-breite">
           <div class="metrik"><p class="metrik-label">Abgenommen</p><p class="metrik-wert gruen" id="m-abgenommen">--</p></div>
           <div class="metrik"><p class="metrik-label">Noch zum Ziel</p><p class="metrik-wert" id="m-rest">--</p></div>
           <div class="metrik"><p class="metrik-label">Zielerreichung</p><p class="metrik-wert" id="m-pct">--</p></div>
           <div class="metrik"><p class="metrik-label">BMI</p><p class="metrik-wert" id="m-bmi">--</p></div>
         </div>
+
         <div class="karte">
           <p class="abschnitt">Prognose</p>
           <div id="prognose-inhalt" style="font-size:14px;color:#888;padding:4px 0;">Wird berechnet...</div>
         </div>
+
         <div class="karte">
           <p class="abschnitt">Wasser heute</p>
           <div class="wasser-gläser" id="wasser-gläser"></div>
           <p class="wasser-text" id="wasser-text"></p>
         </div>
+
         <div class="karte">
           <p class="abschnitt">Rückblick – Vergleich</p>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
@@ -162,8 +257,16 @@ textarea{resize:vertical;min-height:70px;}
           </div>
           <div id="vgl-ergebnis" style="font-size:14px;color:#888;padding:8px 0;">Wähle zwei Daten zum Vergleichen.</div>
         </div>
+
         <div class="karte volle-breite">
-          <p class="abschnitt">Gewichtsverlauf</p>
+          <div class="chart-tab-reihe">
+            <button class="chart-tab aktiv" onclick="wechsleChartAnsicht('gewicht',this)">Gewicht</button>
+            <button class="chart-tab" onclick="wechsleChartAnsicht('bauch',this)">Bauch</button>
+            <button class="chart-tab" onclick="wechsleChartAnsicht('huefte',this)">Hüfte</button>
+            <button class="chart-tab" onclick="wechsleChartAnsicht('brust',this)">Brust</button>
+            <button class="chart-tab" onclick="wechsleChartAnsicht('oberschenkel',this)">Oberschenkel</button>
+          </div>
+          <p class="abschnitt" id="chart-titel">Gewichtsverlauf</p>
           <div class="chart-box" style="position:relative;">
             <canvas id="chart"></canvas>
             <div id="chart-tooltip" style="display:none;position:absolute;top:8px;background:white;border:0.5px solid rgba(0,0,0,0.15);border-radius:8px;padding:6px 10px;font-size:12px;pointer-events:none;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.1);"></div>
@@ -172,13 +275,37 @@ textarea{resize:vertical;min-height:70px;}
       </div>
     </div>
 
+    <!-- ===== EINTRAGEN (inkl. Körper & Fitness) ===== -->
     <div id="tab-eintragen" class="versteckt">
       <p class="seiten-titel">Neuer Eintrag</p>
+
+      <!-- GEWICHT-KARTE -->
       <div class="karte">
-        <label>Datum</label><input type="date" id="e-datum"/>
-        <label>Gewicht (kg)</label><input type="number" id="e-gewicht" placeholder="z. B. 95.4" step="0.1"/>
-        <label>Ausnahmen</label>
-        <div class="tag-raster">
+        <p class="abschnitt">Gewicht</p>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <label style="margin-bottom:0;">Datum</label>
+          <button class="datum-toggle" id="datum-toggle-btn" onclick="toggleDatumFeld()">Anderes Datum wählen</button>
+        </div>
+        <div id="datum-anzeige" style="font-size:15px;font-weight:500;padding:8px 0;color:#1a1a1a;margin-bottom:8px;" id="datum-heute-label"></div>
+        <input type="date" id="e-datum" class="versteckt" onchange="datumGeaendert()"/>
+
+        <label>Gewicht (kg)</label>
+        <input type="number" id="e-gewicht" placeholder="z. B. 95.4" step="0.1" min="30" max="300" oninput="validiereGewicht()"/>
+        <p id="gewicht-fehler" class="fehler versteckt"></p>
+
+        <label>Kalorien (kcal, optional)</label>
+        <input type="number" id="e-kalorien" placeholder="z. B. 1800" step="10" min="0" max="10000"/>
+
+        <label>Stimmung</label>
+        <div class="tag-raster" id="stimmung-tags">
+          <button class="tag stimmung-gut" onclick="toggleStimmung(this,'😊 Gut')">😊 Gut</button>
+          <button class="tag stimmung-neutral" onclick="toggleStimmung(this,'😐 Neutral')">😐 Neutral</button>
+          <button class="tag stimmung-schlecht" onclick="toggleStimmung(this,'😔 Nicht gut')">😔 Nicht gut</button>
+        </div>
+
+        <label>Tages-Tags</label>
+        <div class="tag-raster" id="tag-raster-gewicht">
           <button class="tag" onclick="toggleTag(this)" data-tag="Alkohol">Alkohol</button>
           <button class="tag" onclick="toggleTag(this)" data-tag="Süßes">Süßes</button>
           <button class="tag" onclick="toggleTag(this)" data-tag="Mehr gegessen">Mehr gegessen</button>
@@ -186,23 +313,80 @@ textarea{resize:vertical;min-height:70px;}
           <button class="tag" onclick="toggleTag(this)" data-tag="Krank">Krank</button>
           <button class="tag" onclick="toggleTag(this)" data-tag="Sport">Sport</button>
         </div>
+        <!-- Eigene Tags -->
+        <div class="eigener-tag-bereich">
+          <div id="eigene-tags-anzeige" class="tag-raster" style="margin-bottom:4px;"></div>
+          <div class="eigener-tag-eingabe">
+            <input type="text" id="eigener-tag-input" placeholder="Eigenen Tag hinzufügen…" maxlength="20"/>
+            <button onclick="eigenenTagHinzufuegen()">+ Tag</button>
+          </div>
+        </div>
+
         <label>Notiz (optional)</label>
         <textarea id="e-notiz" placeholder="Was war heute besonders?"></textarea>
-        <button class="btn primaer" onclick="eintragSpeichern()">Eintrag speichern</button>
       </div>
+
+      <!-- KÖRPERMASSE-KARTE -->
+      <div class="karte">
+        <p class="abschnitt">Körpermaße (optional – gleiches Datum)</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div><label>Bauch (cm)</label><input type="number" id="km-bauch" placeholder="z. B. 95" step="0.1"/></div>
+          <div><label>Hüfte (cm)</label><input type="number" id="km-huefte" placeholder="z. B. 105" step="0.1"/></div>
+          <div><label>Brust (cm)</label><input type="number" id="km-brust" placeholder="z. B. 100" step="0.1"/></div>
+          <div><label>Oberschenkel (cm)</label><input type="number" id="km-oberschenkel" placeholder="z. B. 60" step="0.1"/></div>
+        </div>
+      </div>
+
+      <!-- AKTIVITÄT-KARTE -->
+      <div class="karte">
+        <p class="abschnitt">Aktivität (optional – gleiches Datum)</p>
+        <select id="km-aktivitaet-typ" onchange="zeigeAktivitaetFelder()">
+          <option value="">– Aktivität wählen –</option>
+          <option value="laufen">Laufen</option>
+          <option value="radfahren">Radfahren</option>
+          <option value="gehen">Gehen</option>
+          <option value="krafttraining">Krafttraining</option>
+          <option value="schritte">Schritte / Tag</option>
+        </select>
+        <div id="km-aktivitaet-felder" style="display:none;">
+          <div id="km-feld-dauer" style="display:none;"><label>Dauer (Min.)</label><input type="number" id="km-dauer" placeholder="z. B. 45" step="1"/></div>
+          <div id="km-feld-distanz" style="display:none;"><label>Distanz (km)</label><input type="number" id="km-distanz" placeholder="z. B. 5.5" step="0.1"/></div>
+          <div id="km-feld-gewicht" style="display:none;"><label>Trainingsgewicht (kg)</label><input type="number" id="km-trainingsgewicht" placeholder="z. B. 40" step="0.5"/></div>
+          <div id="km-feld-schritte" style="display:none;"><label>Schritte</label><input type="number" id="km-schritte" placeholder="z. B. 8000" step="100"/></div>
+        </div>
+        <label>Notiz zur Aktivität (optional)</label>
+        <textarea id="km-notiz" placeholder="Wie hast du dich gefühlt?" style="min-height:50px;"></textarea>
+      </div>
+
+      <button class="btn primaer" onclick="allesSpreichern()">Alles speichern</button>
     </div>
 
+    <!-- ===== VERLAUF ===== -->
     <div id="tab-verlauf" class="versteckt">
       <p class="seiten-titel">Verlauf</p>
       <div class="karte"><div id="verlauf-liste"></div></div>
     </div>
 
+    <!-- ===== PROFIL ===== -->
     <div id="tab-profil" class="versteckt">
       <p class="seiten-titel">Profil</p>
       <div class="karte">
         <div id="profil-details"></div>
         <button class="btn" onclick="zeige('profile')" style="margin-top:1rem;">Profil wechseln</button>
       </div>
+
+      <!-- Ziel anpassen / Haltephase -->
+      <div class="karte" id="ziel-anpassung-karte">
+        <p class="abschnitt">Ziel & Modus</p>
+        <div id="ziel-anpassung-inhalt"></div>
+      </div>
+
+      <!-- Kalorien-Verlauf -->
+      <div class="karte">
+        <p class="abschnitt">Kalorien-Verlauf</p>
+        <div id="kcal-verlauf"></div>
+      </div>
+
       <div class="karte">
         <p class="abschnitt">Export</p>
         <p style="font-size:13px;color:#888;margin-bottom:12px;">Deine Daten als Datei herunterladen.</p>
@@ -211,50 +395,12 @@ textarea{resize:vertical;min-height:70px;}
       </div>
     </div>
 
-    <div id="tab-koerper" class="versteckt">
-      <p class="seiten-titel">Körper & Fitness</p>
-      <div class="karte">
-        <p class="abschnitt">Maße eintragen</p>
-        <label>Datum</label>
-        <input type="date" id="km-datum"/>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-          <div><label>Bauch (cm)</label><input type="number" id="km-bauch" placeholder="z. B. 95" step="0.1"/></div>
-          <div><label>Hüfte (cm)</label><input type="number" id="km-huefte" placeholder="z. B. 105" step="0.1"/></div>
-          <div><label>Brust (cm)</label><input type="number" id="km-brust" placeholder="z. B. 100" step="0.1"/></div>
-          <div><label>Oberschenkel (cm)</label><input type="number" id="km-oberschenkel" placeholder="z. B. 60" step="0.1"/></div>
-        </div>
-        <p class="abschnitt" style="margin-top:0.5rem;">Aktivität hinzufügen</p>
-        <div style="display:flex;gap:8px;margin-bottom:12px;">
-          <select id="km-aktivitaet-typ" style="flex:1;margin-bottom:0;" onchange="zeigeAktivitaetFelder()">
-            <option value="">– Aktivität wählen –</option>
-            <option value="laufen">Laufen</option>
-            <option value="radfahren">Radfahren</option>
-            <option value="gehen">Gehen</option>
-            <option value="krafttraining">Krafttraining</option>
-            <option value="schritte">Schritte / Tag</option>
-          </select>
-        </div>
-        <div id="km-aktivitaet-felder" style="display:none;">
-          <div id="km-feld-dauer" style="display:none;"><label>Dauer (Min.)</label><input type="number" id="km-dauer" placeholder="z. B. 45" step="1"/></div>
-          <div id="km-feld-distanz" style="display:none;"><label>Distanz (km)</label><input type="number" id="km-distanz" placeholder="z. B. 5.5" step="0.1"/></div>
-          <div id="km-feld-gewicht" style="display:none;"><label>Trainingsgewicht (kg)</label><input type="number" id="km-trainingsgewicht" placeholder="z. B. 40" step="0.5"/></div>
-          <div id="km-feld-schritte" style="display:none;"><label>Schritte</label><input type="number" id="km-schritte" placeholder="z. B. 8000" step="100"/></div>
-        </div>
-        <label>Notiz (optional)</label>
-        <textarea id="km-notiz" placeholder="Wie hast du dich gefühlt?"></textarea>
-        <button class="btn primaer" onclick="koerperSpeichern()">Eintrag speichern</button>
-      </div>
-      <div class="karte">
-        <p class="abschnitt">Verlauf Körpermaße</p>
-        <div id="koerper-verlauf"></div>
-      </div>
-    </div>
-
   </div>
+
+  <!-- BOTTOM NAV (4 Tabs – Körper ist jetzt in Eintragen integriert) -->
   <div class="bottom-nav">
     <button class="nav-btn aktiv" id="nav-uebersicht" onclick="wechsleTab('uebersicht')"><span class="nav-icon">&#128200;</span>Übersicht</button>
     <button class="nav-btn" id="nav-eintragen" onclick="wechsleTab('eintragen')"><span class="nav-icon">&#43;</span>Eintragen</button>
-    <button class="nav-btn" id="nav-koerper" onclick="wechsleTab('koerper')"><span class="nav-icon">&#128170;</span>Körper</button>
     <button class="nav-btn" id="nav-verlauf" onclick="wechsleTab('verlauf')"><span class="nav-icon">&#128203;</span>Verlauf</button>
     <button class="nav-btn" id="nav-profil" onclick="wechsleTab('profil')"><span class="nav-icon">&#128100;</span>Profil</button>
   </div>
@@ -265,14 +411,49 @@ textarea{resize:vertical;min-height:70px;}
 const PASSWORT = 'familie2024';
 // =====================================
 
-const WASSER_ZIEL = 8;
 let aktivesProfilIndex = null;
-let gewaehlteTypen = [];
+let gewaehlteTypen = [];       // Standard-Tags
+let gewaehlteStimmung = null;  // Stimmungs-Tag
+let aktuelleChartAnsicht = 'gewicht';
 let chart = null;
+let datumManuell = false;      // Zeigt ob Nutzer Datum manuell gewählt hat
 
-function ladeProfile() { try { return JSON.parse(localStorage.getItem('wt_profile') || '[]'); } catch(e) { return []; } }
+// ========== HILFSFUNKTIONEN ==========
+
+function ladeProfile() {
+  try { return JSON.parse(localStorage.getItem('wt_profile') || '[]'); }
+  catch(e) { return []; }
+}
 function speichereProfile(p) { localStorage.setItem('wt_profile', JSON.stringify(p)); }
 function aktivesProfile() { return ladeProfile()[aktivesProfilIndex]; }
+
+function heute() { return new Date().toISOString().split('T')[0]; }
+
+function formatDatum(iso) {
+  // Wandelt "2026-04-20" in "20.04.2026" um
+  const [y,m,d] = iso.split('-');
+  return `${d}.${m}.${y}`;
+}
+
+function jetztuhrzeit() {
+  // Gibt aktuelle Uhrzeit als "HH:MM" zurück, z.B. "07:32"
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2, '0');   // padStart stellt sicher: 7 → "07"
+  const m = String(now.getMinutes()).padStart(2, '0');
+  return `${h}:${m}`;
+}
+
+// ========== TOAST-FEEDBACK ==========
+
+function zeigeToast(text = '✓ Gespeichert', farbe = '#0F6E56') {
+  const t = document.getElementById('toast');
+  t.textContent = text;
+  t.style.background = farbe;
+  t.classList.add('sichtbar');
+  setTimeout(() => t.classList.remove('sichtbar'), 2500);
+}
+
+// ========== SCREENS ==========
 
 function zeige(id) {
   ['login','profile','neues-profil','app'].forEach(s => {
@@ -280,6 +461,8 @@ function zeige(id) {
   });
   if (id === 'profile') zeigeProfilListe();
 }
+
+// ========== LOGIN ==========
 
 function login() {
   const eingabe = document.getElementById('pw-feld').value.trim();
@@ -293,6 +476,8 @@ function login() {
   }
 }
 
+// ========== PROFIL ==========
+
 function zeigeProfilListe() {
   const profile = ladeProfile();
   const liste = document.getElementById('profil-liste');
@@ -304,10 +489,14 @@ function zeigeProfilListe() {
     const letzt = p.eintraege.length ? p.eintraege[p.eintraege.length-1].gewicht : p.start;
     const abgen = Math.max(0, p.start - letzt).toFixed(1);
     const ini = p.name.slice(0,2).toUpperCase();
+    const halteBadge = p.haltegewichtModus ? '<span style="font-size:11px;background:#e1f5ee;color:#0F6E56;border-radius:99px;padding:2px 8px;margin-left:6px;">Haltephase</span>' : '';
     return `<div class="profil-item" onclick="profilWaehlen(${i})">
       <div style="display:flex;align-items:center;">
         <div class="profil-avatar">${ini}</div>
-        <div><p style="font-size:15px;font-weight:500;">${p.name}</p><p style="font-size:12px;color:#888;">${parseFloat(letzt).toFixed(1)} kg &bull; ${abgen} kg abgenommen</p></div>
+        <div>
+          <p style="font-size:15px;font-weight:500;">${p.name}${halteBadge}</p>
+          <p style="font-size:12px;color:#888;">${parseFloat(letzt).toFixed(1)} kg &bull; ${abgen} kg abgenommen</p>
+        </div>
       </div>
       <span style="color:#ccc;font-size:18px;">&#8250;</span>
     </div>`;
@@ -326,9 +515,14 @@ function profilSpeichern() {
   const start = parseFloat(document.getElementById('np-start').value);
   const ziel = parseFloat(document.getElementById('np-ziel').value);
   if (!name || !groesse || !start || !ziel) { alert('Bitte alle Felder ausfüllen.'); return; }
-  const heute = new Date().toISOString().split('T')[0];
   const profile = ladeProfile();
-  profile.push({ name, groesse, start, ziel, eintraege: [{ datum: heute, gewicht: start, typen: [], notiz: 'Startgewicht' }] });
+  profile.push({
+    name, groesse, start, ziel,
+    haltegewichtModus: false,
+    eigeneTags: [],
+    eintraege: [{ datum: heute(), gewicht: start, typen: [], notiz: 'Startgewicht', kalorien: null, stimmung: null }],
+    koerper: []
+  });
   speichereProfile(profile);
   ['np-name','np-groesse','np-start','np-ziel'].forEach(id => document.getElementById(id).value = '');
   aktivesProfilIndex = profile.length - 1;
@@ -336,17 +530,220 @@ function profilSpeichern() {
   wechsleTab('uebersicht');
 }
 
+// ========== TAB-WECHSEL ==========
+
 function wechsleTab(tab) {
-  ['uebersicht','eintragen','verlauf','profil','koerper'].forEach(t => {
+  ['uebersicht','eintragen','verlauf','profil'].forEach(t => {
     document.getElementById('tab-' + t).classList.toggle('versteckt', t !== tab);
     document.getElementById('nav-' + t).classList.toggle('aktiv', t === tab);
   });
   if (tab === 'uebersicht') aktualisiereDashboard();
   if (tab === 'verlauf') zeigeVerlauf();
-  if (tab === 'profil') zeigeProfil();
-  if (tab === 'koerper') { zeigeKoerperVerlauf(); document.getElementById('km-datum').value = new Date().toISOString().split('T')[0]; }
-  if (tab === 'eintragen') document.getElementById('e-datum').value = new Date().toISOString().split('T')[0];
+  if (tab === 'profil') { zeigeProfil(); zeigeKcalVerlauf(); zeigeZielAnpassungKarte(); }
+  if (tab === 'eintragen') initialisiereEintragenTab();
 }
+
+function initialisiereEintragenTab() {
+  // Datum immer auf heute zurücksetzen beim Öffnen
+  datumManuell = false;
+  document.getElementById('e-datum').value = heute();
+  document.getElementById('e-datum').classList.add('versteckt');
+  document.getElementById('datum-anzeige').textContent = 'Heute, ' + formatDatum(heute()) + ' · ' + jetztuhrzeit() + ' Uhr';
+  document.getElementById('datum-toggle-btn').textContent = 'Anderes Datum wählen';
+  // Eigene Tags des Profils anzeigen
+  ladeEigeneTags();
+}
+
+// ========== DATUM-TOGGLE ==========
+
+function toggleDatumFeld() {
+  const feld = document.getElementById('e-datum');
+  const anzeige = document.getElementById('datum-anzeige');
+  const btn = document.getElementById('datum-toggle-btn');
+  datumManuell = !datumManuell;
+  if (datumManuell) {
+    feld.classList.remove('versteckt');
+    anzeige.style.display = 'none';
+    btn.textContent = 'Wieder auf heute setzen';
+  } else {
+    feld.classList.add('versteckt');
+    anzeige.style.display = '';
+    feld.value = heute();
+    anzeige.textContent = 'Heute, ' + formatDatum(heute()) + ' · ' + jetztuhrzeit() + ' Uhr';
+    btn.textContent = 'Anderes Datum wählen';
+  }
+}
+
+function datumGeaendert() {
+  const val = document.getElementById('e-datum').value;
+  if (val) {
+    document.getElementById('datum-anzeige').textContent = formatDatum(val);
+  }
+}
+
+// ========== GEWICHT-VALIDIERUNG ==========
+
+function validiereGewicht() {
+  const val = parseFloat(document.getElementById('e-gewicht').value);
+  const fehler = document.getElementById('gewicht-fehler');
+  const feld = document.getElementById('e-gewicht');
+  if (isNaN(val)) { fehler.classList.add('versteckt'); feld.classList.remove('fehler-feld'); return true; }
+  if (val < 30 || val > 300) {
+    fehler.textContent = 'Gewicht muss zwischen 30 und 300 kg liegen. Bitte prüfen!';
+    fehler.classList.remove('versteckt');
+    feld.classList.add('fehler-feld');
+    return false;
+  }
+  fehler.classList.add('versteckt');
+  feld.classList.remove('fehler-feld');
+  return true;
+}
+
+// ========== STIMMUNGS-TAG ==========
+
+function toggleStimmung(btn, wert) {
+  const alle = document.querySelectorAll('#stimmung-tags .tag');
+  if (gewaehlteStimmung === wert) {
+    // Deaktivieren
+    btn.classList.remove('aktiv');
+    gewaehlteStimmung = null;
+  } else {
+    alle.forEach(b => b.classList.remove('aktiv'));
+    btn.classList.add('aktiv');
+    gewaehlteStimmung = wert;
+  }
+}
+
+// ========== EIGENE TAGS ==========
+
+function ladeEigeneTags() {
+  const p = aktivesProfile();
+  const tags = p.eigeneTags || [];
+  const container = document.getElementById('eigene-tags-anzeige');
+  container.innerHTML = tags.map(t =>
+    `<button class="tag" onclick="toggleEigenerTag(this)" data-tag="${t}">${t}</button>`
+  ).join('');
+}
+
+function eigenenTagHinzufuegen() {
+  const input = document.getElementById('eigener-tag-input');
+  const text = input.value.trim();
+  if (!text) return;
+  const profile = ladeProfile();
+  const p = profile[aktivesProfilIndex];
+  if (!p.eigeneTags) p.eigeneTags = [];
+  if (p.eigeneTags.includes(text)) { input.value = ''; return; }
+  p.eigeneTags.push(text);
+  speichereProfile(profile);
+  input.value = '';
+  ladeEigeneTags();
+  zeigeToast('Tag "' + text + '" gespeichert');
+}
+
+function toggleEigenerTag(btn) {
+  btn.classList.toggle('aktiv');
+  const typ = btn.dataset.tag;
+  if (gewaehlteTypen.includes(typ)) gewaehlteTypen = gewaehlteTypen.filter(t => t !== typ);
+  else gewaehlteTypen.push(typ);
+}
+
+function toggleTag(btn) {
+  btn.classList.toggle('aktiv');
+  const typ = btn.dataset.tag;
+  if (gewaehlteTypen.includes(typ)) gewaehlteTypen = gewaehlteTypen.filter(t => t !== typ);
+  else gewaehlteTypen.push(typ);
+}
+
+// ========== SCHNELL-SPEICHERN (von Übersicht) ==========
+
+function schnellSpeichern() {
+  const val = parseFloat(document.getElementById('schnell-gewicht').value);
+  if (!val || val < 30 || val > 300) {
+    zeigeToast('⚠ Ungültiges Gewicht (30–300 kg)', '#993C1D');
+    return;
+  }
+  const profile = ladeProfile();
+  const p = profile[aktivesProfilIndex];
+  const h = heute();
+  // Bestehenden heutigen Eintrag überschreiben oder neu anlegen
+  const idx = p.eintraege.findIndex(e => e.datum === h);
+  const eintrag = { datum: h, gewicht: val, uhrzeit: jetztuhrzeit(), typen: [], notiz: '', kalorien: null, stimmung: null };
+  if (idx >= 0) p.eintraege[idx] = eintrag;
+  else { p.eintraege.push(eintrag); p.eintraege.sort((a,b) => a.datum.localeCompare(b.datum)); }
+  speichereProfile(profile);
+  document.getElementById('schnell-gewicht').value = '';
+  zeigeToast('✓ ' + val.toFixed(1) + ' kg gespeichert');
+  aktualisiereDashboard();
+}
+
+// ========== ALLES SPEICHERN (Eintragen-Tab) ==========
+
+function allesSpreichern() {
+  if (!validiereGewicht()) return;
+  const profile = ladeProfile();
+  const p = profile[aktivesProfilIndex];
+  const datum = document.getElementById('e-datum').value || heute();
+  const gewichtVal = parseFloat(document.getElementById('e-gewicht').value);
+  const notiz = document.getElementById('e-notiz').value.trim();
+  const kalorien = document.getElementById('e-kalorien').value ? parseInt(document.getElementById('e-kalorien').value) : null;
+
+  if (!gewichtVal) { zeigeToast('⚠ Bitte Gewicht eingeben', '#993C1D'); return; }
+
+  // Gewicht-Eintrag speichern (überschreiben wenn gleicher Tag)
+  const idx = p.eintraege.findIndex(e => e.datum === datum);
+  const eintrag = {
+    datum,
+    uhrzeit: datumManuell ? null : jetztuhrzeit(), // Uhrzeit nur bei "heute"-Einträgen automatisch
+    gewicht: gewichtVal,
+    typen: [...gewaehlteTypen],
+    notiz,
+    kalorien,
+    stimmung: gewaehlteStimmung
+  };
+  if (idx >= 0) p.eintraege[idx] = eintrag;
+  else { p.eintraege.push(eintrag); p.eintraege.sort((a,b) => a.datum.localeCompare(b.datum)); }
+
+  // Körpermaße speichern (wenn ausgefüllt)
+  if (!p.koerper) p.koerper = [];
+  const bauch = document.getElementById('km-bauch').value ? parseFloat(document.getElementById('km-bauch').value) : null;
+  const huefte = document.getElementById('km-huefte').value ? parseFloat(document.getElementById('km-huefte').value) : null;
+  const brust = document.getElementById('km-brust').value ? parseFloat(document.getElementById('km-brust').value) : null;
+  const oberschenkel = document.getElementById('km-oberschenkel').value ? parseFloat(document.getElementById('km-oberschenkel').value) : null;
+  const typ = document.getElementById('km-aktivitaet-typ').value;
+
+  if (bauch || huefte || brust || oberschenkel || typ) {
+    const koerperEintrag = {
+      datum,
+      bauch, huefte, brust, oberschenkel,
+      aktivitaet: typ || null,
+      dauer: document.getElementById('km-dauer').value ? parseFloat(document.getElementById('km-dauer').value) : null,
+      distanz: document.getElementById('km-distanz').value ? parseFloat(document.getElementById('km-distanz').value) : null,
+      trainingsgewicht: document.getElementById('km-trainingsgewicht').value ? parseFloat(document.getElementById('km-trainingsgewicht').value) : null,
+      schritte: document.getElementById('km-schritte').value ? parseFloat(document.getElementById('km-schritte').value) : null,
+      notiz: document.getElementById('km-notiz').value.trim()
+    };
+    const kidx = p.koerper.findIndex(k => k.datum === datum);
+    if (kidx >= 0) p.koerper[kidx] = koerperEintrag;
+    else { p.koerper.push(koerperEintrag); p.koerper.sort((a,b) => a.datum.localeCompare(b.datum)); }
+  }
+
+  speichereProfile(profile);
+
+  // Felder zurücksetzen
+  gewaehlteTypen = [];
+  gewaehlteStimmung = null;
+  document.querySelectorAll('#tag-raster-gewicht .tag, #eigene-tags-anzeige .tag, #stimmung-tags .tag').forEach(t => t.classList.remove('aktiv'));
+  ['e-gewicht','e-notiz','e-kalorien','km-bauch','km-huefte','km-brust','km-oberschenkel','km-dauer','km-distanz','km-trainingsgewicht','km-schritte','km-notiz'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('km-aktivitaet-typ').value = '';
+  document.getElementById('km-aktivitaet-felder').style.display = 'none';
+  document.getElementById('gewicht-fehler').classList.add('versteckt');
+
+  zeigeToast('✓ Alles gespeichert');
+
+  setTimeout(() => wechsleTab('uebersicht'), 800);
+}
+
+// ========== DASHBOARD ==========
 
 function aktualisiereDashboard() {
   const p = aktivesProfile();
@@ -357,7 +754,7 @@ function aktualisiereDashboard() {
   const pct = Math.min(100, Math.round((abgen / gesamt) * 100));
   const rest = Math.max(0, letzt - p.ziel);
   const bmi = (letzt / ((p.groesse / 100) ** 2)).toFixed(1);
-  const heute = new Date().toISOString().split('T')[0];
+  const h = heute();
 
   document.getElementById('begruessung').textContent = 'Hallo, ' + p.name + '!';
   document.getElementById('akt-gewicht').textContent = letzt.toFixed(1);
@@ -368,31 +765,119 @@ function aktualisiereDashboard() {
   document.getElementById('balken-fill').style.width = pct + '%';
   document.getElementById('balken-text').textContent = pct + '% des Ziels erreicht';
 
-  const heuteEintrag = p.eintraege.some(e => e.datum === heute);
+  // Haltegewicht-Badge
+  const badge = document.getElementById('haltegewicht-badge');
+  if (p.haltegewichtModus) badge.classList.remove('versteckt');
+  else badge.classList.add('versteckt');
+
+  // Heutiger Eintrag vorhanden?
+  const heuteEintrag = p.eintraege.some(e => e.datum === h);
   document.getElementById('kein-eintrag-hinweis').classList.toggle('versteckt', heuteEintrag);
 
+  // Meilensteine
   const ms = document.getElementById('meilensteine');
   ms.innerHTML = '';
   [5,10,15,20,25,30,40,50].forEach(m => {
     if (abgen >= m) ms.innerHTML += `<div class="meilenstein">&#127942; Meilenstein: ${m} kg abgenommen!</div>`;
   });
 
-  zeigeWasser();
+  // Wochenzusammenfassung (nur montags)
+  const heute_obj = new Date();
+  if (heute_obj.getDay() === 1) zeigeWochenzusammenfassung(p);
+  else document.getElementById('wochen-summary').classList.add('versteckt');
+
+  zeigeAmpel(p, abgen, gesamt, letzt);
+  zeigeWasser(p);
   zeigePrognose(p);
   zeigePlateau(p);
-  zeigeChart(p);
+  zeigeChart(p, aktuelleChartAnsicht);
 }
+
+// ========== AMPEL ==========
+
+function zeigeAmpel(p, abgen, gesamt, letzt) {
+  const container = document.getElementById('ampel-anzeige');
+  const sortiert = [...p.eintraege].sort((a,b) => a.datum.localeCompare(b.datum));
+  if (sortiert.length < 3) { container.classList.add('versteckt'); return; }
+
+  const letzteWoche = sortiert.slice(-7);
+  const trendVal = letzteWoche.length > 1
+    ? letzteWoche[letzteWoche.length-1].gewicht - letzteWoche[0].gewicht
+    : 0;
+
+  let klasse, symbol, text;
+
+  if (p.haltegewichtModus) {
+    const toleranz = Math.abs(trendVal) < 0.5;
+    klasse = toleranz ? 'gruen' : 'gelb';
+    symbol = toleranz ? '✓' : '⚠';
+    text = toleranz
+      ? 'Haltephase: Gewicht stabil – super!'
+      : 'Haltephase: Gewicht schwankt – im Auge behalten.';
+  } else {
+    if (trendVal < -0.2) { klasse='gruen'; symbol='↓'; text='Trend: Du nimmst ab – weiter so!'; }
+    else if (trendVal < 0.3) { klasse='gelb'; symbol='→'; text='Trend: Kaum Veränderung in den letzten 7 Tagen – dranblieben!'; }
+    else { klasse='rot'; symbol='↑'; text='Trend: Leichte Zunahme diese Woche – aufpassen!'; }
+  }
+
+  container.className = 'ampel ' + klasse + ' volle-breite';
+  container.innerHTML = `<div class="ampel-kreis"></div><span>${symbol} ${text}</span>`;
+  container.classList.remove('versteckt');
+}
+
+// ========== WOCHENZUSAMMENFASSUNG ==========
+
+function zeigeWochenzusammenfassung(p) {
+  const container = document.getElementById('wochen-summary');
+  const heute_obj = new Date();
+  const vorWoche = new Date(heute_obj);
+  vorWoche.setDate(vorWoche.getDate() - 7);
+  const vorWocheStr = vorWoche.toISOString().split('T')[0];
+  const hStr = heute_obj.toISOString().split('T')[0];
+
+  const wochenEintraege = p.eintraege.filter(e => e.datum >= vorWocheStr && e.datum <= hStr);
+  if (wochenEintraege.length < 2) { container.classList.add('versteckt'); return; }
+
+  const erster = wochenEintraege[0];
+  const letzter = wochenEintraege[wochenEintraege.length-1];
+  const diff = letzter.gewicht - erster.gewicht;
+  const kcalEintraege = wochenEintraege.filter(e => e.kalorien);
+  const kcalDurchschnitt = kcalEintraege.length
+    ? Math.round(kcalEintraege.reduce((s,e) => s + e.kalorien, 0) / kcalEintraege.length)
+    : null;
+  const sportTage = wochenEintraege.filter(e => e.typen && e.typen.includes('Sport')).length;
+  const sign = diff <= 0 ? '' : '+';
+  const farbe = diff <= 0 ? '#0F6E56' : '#993C1D';
+
+  container.className = 'karte volle-breite';
+  container.innerHTML = `
+    <p class="abschnitt">📊 Wochenzusammenfassung</p>
+    <div class="woche-karte">
+      <div class="woche-stat"><span>Einträge diese Woche</span><strong>${wochenEintraege.length}</strong></div>
+      <div class="woche-stat"><span>Gewicht von → bis</span><strong>${erster.gewicht.toFixed(1)} → ${letzter.gewicht.toFixed(1)} kg</strong></div>
+      <div class="woche-stat"><span>Veränderung</span><strong style="color:${farbe}">${sign}${diff.toFixed(1)} kg</strong></div>
+      ${kcalDurchschnitt ? `<div class="woche-stat"><span>Ø Kalorien/Tag</span><strong>${kcalDurchschnitt} kcal</strong></div>` : ''}
+      ${sportTage > 0 ? `<div class="woche-stat"><span>Sport-Tage</span><strong>${sportTage}x</strong></div>` : ''}
+    </div>`;
+  container.classList.remove('versteckt');
+}
+
+// ========== PROGNOSE ==========
 
 function zeigePrognose(p) {
   const inhalt = document.getElementById('prognose-inhalt');
+  if (p.haltegewichtModus) {
+    inhalt.innerHTML = '<span style="color:#0F6E56;">Du bist in der Haltephase – kein Abnahmeziel aktiv.</span>';
+    return;
+  }
   if (p.eintraege.length < 3) {
     inhalt.innerHTML = '<span style="color:#aaa;">Noch zu wenig Daten – bitte mehr Einträge hinzufügen.</span>';
     return;
   }
-  const sortiert = [...p.eintraege].sort((a, b) => a.datum.localeCompare(b.datum));
-  const letzt = sortiert[sortiert.length - 1];
+  const sortiert = [...p.eintraege].sort((a,b) => a.datum.localeCompare(b.datum));
+  const letzt = sortiert[sortiert.length-1];
   const erst = sortiert[0];
-  const tage = Math.max(1, (new Date(letzt.datum) - new Date(erst.datum)) / (1000 * 60 * 60 * 24));
+  const tage = Math.max(1, (new Date(letzt.datum) - new Date(erst.datum)) / (1000*60*60*24));
   const abnahmeProTag = (erst.gewicht - letzt.gewicht) / tage;
 
   if (abnahmeProTag <= 0) {
@@ -404,13 +889,13 @@ function zeigePrognose(p) {
   const restTage = Math.round(restKg / abnahmeProTag);
   const zielDatum = new Date();
   zielDatum.setDate(zielDatum.getDate() + restTage);
-  const zielStr = zielDatum.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  const zielStr = zielDatum.toLocaleDateString('de-DE', {day:'2-digit',month:'2-digit',year:'numeric'});
   const woche = (restTage / 7).toFixed(1);
 
   inhalt.innerHTML = `
     <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid rgba(0,0,0,0.08);">
       <span style="color:#888;">Abnahme pro Woche</span>
-      <span style="font-weight:500;">${(abnahmeProTag * 7).toFixed(2)} kg</span>
+      <span style="font-weight:500;">${(abnahmeProTag*7).toFixed(2)} kg</span>
     </div>
     <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid rgba(0,0,0,0.08);">
       <span style="color:#888;">Noch ca.</span>
@@ -422,16 +907,16 @@ function zeigePrognose(p) {
     </div>`;
 }
 
+// ========== PLATEAU ==========
+
 function zeigePlateau(p) {
   const hinweis = document.getElementById('plateau-hinweis');
   const text = document.getElementById('plateau-text');
-  if (p.eintraege.length < 5) { hinweis.classList.add('versteckt'); return; }
+  if (p.haltegewichtModus || p.eintraege.length < 5) { hinweis.classList.add('versteckt'); return; }
 
-  const sortiert = [...p.eintraege].sort((a, b) => a.datum.localeCompare(b.datum));
-  const heute = new Date();
-  const vor14 = new Date();
-  vor14.setDate(heute.getDate() - 14);
-
+  const sortiert = [...p.eintraege].sort((a,b) => a.datum.localeCompare(b.datum));
+  const h = new Date();
+  const vor14 = new Date(); vor14.setDate(h.getDate() - 14);
   const letzte14 = sortiert.filter(e => new Date(e.datum) >= vor14);
   if (letzte14.length < 3) { hinweis.classList.add('versteckt'); return; }
 
@@ -441,11 +926,123 @@ function zeigePlateau(p) {
 
   if (schwankung < 0.5) {
     hinweis.classList.remove('versteckt');
-    text.textContent = 'Du befindest dich seit ca. 2 Wochen in einem Plateau (' + schwankung.toFixed(1) + ' kg Schwankung). Das ist normal – bleib dran!';
+    text.textContent = `Du bist seit ca. 2 Wochen in einem Plateau (${schwankung.toFixed(1)} kg Schwankung). Möchtest du dein Ziel oder deine Strategie anpassen?`;
   } else {
     hinweis.classList.add('versteckt');
   }
 }
+
+// ========== ZIEL-ANPASSUNG ==========
+
+function zeigeZielanpassung() {
+  wechsleTab('profil');
+  setTimeout(() => document.getElementById('ziel-anpassung-karte').scrollIntoView({behavior:'smooth'}), 300);
+}
+
+function zeigeZielAnpassungKarte() {
+  const p = aktivesProfile();
+  const container = document.getElementById('ziel-anpassung-inhalt');
+  container.innerHTML = `
+    <div style="font-size:14px;color:#888;margin-bottom:12px;">
+      Aktuelles Ziel: <strong>${p.ziel.toFixed(1)} kg</strong> &nbsp;|&nbsp;
+      Modus: <strong>${p.haltegewichtModus ? 'Haltephase' : 'Abnehmen'}</strong>
+    </div>
+
+    <label>Startgewicht anpassen (kg)</label>
+    <input type="number" id="neues-startgewicht" placeholder="z. B. 110" step="0.1" min="30" max="300" value="${p.start.toFixed(1)}"/>
+    <button class="btn" onclick="startgewichtSpeichern()" style="margin-bottom:16px;">Startgewicht aktualisieren</button>
+
+    <label>Neues Zielgewicht (kg)</label>
+    <input type="number" id="neues-ziel" placeholder="z. B. 75" step="0.1" min="30" max="300" value="${p.ziel.toFixed(1)}"/>
+    <button class="btn primaer" onclick="zielSpeichern()" style="margin-bottom:8px;">Zielgewicht aktualisieren</button>
+    ${p.haltegewichtModus
+      ? `<button class="btn" onclick="haltegewichtToggle(false)">Abnehmphase starten</button>`
+      : `<button class="btn" onclick="haltegewichtToggle(true)">🏁 Ziel erreicht – Haltephase starten</button>`
+    }`;
+}
+
+function startgewichtSpeichern() {
+  const neuesStart = parseFloat(document.getElementById('neues-startgewicht').value);
+  if (!neuesStart || neuesStart < 30 || neuesStart > 300) {
+    zeigeToast('⚠ Ungültiges Startgewicht (30–300 kg)', '#993C1D'); return;
+  }
+  const profile = ladeProfile();
+  const p = profile[aktivesProfilIndex];
+
+  // Startgewicht im Profil aktualisieren
+  p.start = neuesStart;
+
+  // Ersten Eintrag (Startgewicht-Eintrag) ebenfalls anpassen, falls vorhanden
+  const ersterEintrag = p.eintraege.find(e => e.notiz === 'Startgewicht');
+  if (ersterEintrag) {
+    ersterEintrag.gewicht = neuesStart;
+  } else if (p.eintraege.length > 0) {
+    // Fallback: allerersten Eintrag anpassen
+    p.eintraege[0].gewicht = neuesStart;
+  }
+
+  speichereProfile(profile);
+  zeigeToast('✓ Startgewicht auf ' + neuesStart.toFixed(1) + ' kg aktualisiert');
+  zeigeZielAnpassungKarte();
+  zeigeProfil(); // Profiltabelle sofort aktualisieren
+}
+
+function zielSpeichern() {
+  const neuesZiel = parseFloat(document.getElementById('neues-ziel').value);
+  if (!neuesZiel || neuesZiel < 30 || neuesZiel > 300) {
+    zeigeToast('⚠ Ungültiges Zielgewicht', '#993C1D'); return;
+  }
+  const profile = ladeProfile();
+  profile[aktivesProfilIndex].ziel = neuesZiel;
+  speichereProfile(profile);
+  zeigeToast('✓ Ziel auf ' + neuesZiel.toFixed(1) + ' kg aktualisiert');
+  zeigeZielAnpassungKarte();
+}
+
+function haltegewichtToggle(aktiv) {
+  const profile = ladeProfile();
+  profile[aktivesProfilIndex].haltegewichtModus = aktiv;
+  speichereProfile(profile);
+  zeigeToast(aktiv ? '🏁 Haltephase gestartet!' : '💪 Abnehmphase gestartet!');
+  zeigeZielAnpassungKarte();
+}
+
+// ========== WASSER ==========
+
+function zeigeWasser(p) {
+  const h = heute();
+  const anzahl = parseInt(localStorage.getItem('wt_wasser_' + h) || '0');
+
+  // Dynamisches Ziel: Sport heute? → 10 Gläser, sonst 8
+  let ziel = 8;
+  if (p && p.eintraege) {
+    const heuteE = p.eintraege.find(e => e.datum === h);
+    if (heuteE && heuteE.typen && heuteE.typen.includes('Sport')) ziel = 10;
+  }
+
+  const container = document.getElementById('wasser-gläser');
+  const text = document.getElementById('wasser-text');
+  container.innerHTML = '';
+
+  for (let i = 0; i < ziel; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'glas' + (i < anzahl ? ' voll' : '');
+    btn.innerHTML = '&#128167;';
+    const idx = i;
+    btn.onclick = function() {
+      const neu = idx < anzahl ? idx : idx + 1;
+      localStorage.setItem('wt_wasser_' + h, neu);
+      zeigeWasser(p);
+    };
+    container.appendChild(btn);
+  }
+
+  if (anzahl === 0) text.textContent = 'Noch kein Glas getrunken – los geht\'s!' + (ziel === 10 ? ' (Sport-Tag: 10 Gläser)' : '');
+  else if (anzahl < ziel) text.textContent = `${anzahl} von ${ziel} Gläsern getrunken.` + (ziel === 10 ? ' (Sport-Tag)' : '');
+  else text.textContent = 'Super! Tagesziel erreicht! 💧';
+}
+
+// ========== VERGLEICH ==========
 
 function zeigeVergleich() {
   const p = aktivesProfile();
@@ -453,91 +1050,106 @@ function zeigeVergleich() {
   const datum1 = document.getElementById('vgl-datum-1').value;
   const datum2 = document.getElementById('vgl-datum-2').value;
   const ergebnis = document.getElementById('vgl-ergebnis');
+  if (!datum1 || !datum2) { ergebnis.innerHTML = '<span style="color:#aaa;">Bitte beide Daten auswählen.</span>'; return; }
 
-  if (!datum1 || !datum2) {
-    ergebnis.innerHTML = '<span style="color:#aaa;">Bitte beide Daten auswählen.</span>';
-    return;
-  }
+  const sortiert = [...p.eintraege].sort((a,b) => a.datum.localeCompare(b.datum));
+  const e1 = sortiert.filter(e => e.datum <= datum1).pop();
+  const e2 = sortiert.filter(e => e.datum <= datum2).pop();
+  if (!e1 || !e2) { ergebnis.innerHTML = '<span style="color:#aaa;">Für einen der Zeiträume sind keine Daten vorhanden.</span>'; return; }
 
-  const sortiert = [...p.eintraege].sort((a, b) => a.datum.localeCompare(b.datum));
-  const eintrag1 = sortiert.filter(e => e.datum <= datum1).pop();
-  const eintrag2 = sortiert.filter(e => e.datum <= datum2).pop();
-
-  if (!eintrag1 || !eintrag2) {
-    ergebnis.innerHTML = '<span style="color:#aaa;">Für einen der Zeiträume sind keine Daten vorhanden.</span>';
-    return;
-  }
-
-  const diff = eintrag2.gewicht - eintrag1.gewicht;
+  const diff = e2.gewicht - e1.gewicht;
   const sign = diff <= 0 ? '' : '+';
   const farbe = diff <= 0 ? '#0F6E56' : '#993C1D';
   const richtung = diff <= 0 ? 'abgenommen' : 'zugenommen';
 
   ergebnis.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid rgba(0,0,0,0.08);">
-      <span style="color:#888;">${eintrag1.datum}</span>
-      <span style="font-weight:500;">${eintrag1.gewicht.toFixed(1)} kg</span>
+      <span style="color:#888;">${e1.datum}</span><span style="font-weight:500;">${e1.gewicht.toFixed(1)} kg</span>
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid rgba(0,0,0,0.08);">
-      <span style="color:#888;">${eintrag2.datum}</span>
-      <span style="font-weight:500;">${eintrag2.gewicht.toFixed(1)} kg</span>
+      <span style="color:#888;">${e2.datum}</span><span style="font-weight:500;">${e2.gewicht.toFixed(1)} kg</span>
     </div>
     <div style="text-align:center;padding:10px 0 4px;">
       <span style="font-size:20px;font-weight:500;color:${farbe};">${sign}${diff.toFixed(1)} kg ${richtung}</span>
     </div>`;
 }
 
-function zeigeWasser() {
-  const heute = new Date().toISOString().split('T')[0];
-  const anzahl = parseInt(localStorage.getItem('wt_wasser_' + heute) || '0');
-  const container = document.getElementById('wasser-gläser');
-  const text = document.getElementById('wasser-text');
-  container.innerHTML = '';
-  for (let i = 0; i < WASSER_ZIEL; i++) {
-    const btn = document.createElement('button');
-    btn.className = 'glas' + (i < anzahl ? ' voll' : '');
-    btn.innerHTML = '&#128167;';
-    const idx = i;
-    btn.onclick = function() {
-      const neu = idx < anzahl ? idx : idx + 1;
-      localStorage.setItem('wt_wasser_' + heute, neu);
-      zeigeWasser();
-    };
-    container.appendChild(btn);
-  }
-  if (anzahl === 0) text.textContent = 'Noch kein Glas getrunken – los geht\'s!';
-  else if (anzahl < WASSER_ZIEL) text.textContent = anzahl + ' von ' + WASSER_ZIEL + ' Gläsern getrunken.';
-  else text.textContent = 'Super! Tagesziel erreicht!';
+// ========== CHART ==========
+
+function wechsleChartAnsicht(ansicht, btn) {
+  aktuelleChartAnsicht = ansicht;
+  document.querySelectorAll('.chart-tab').forEach(b => b.classList.remove('aktiv'));
+  btn.classList.add('aktiv');
+  const titel = { gewicht:'Gewichtsverlauf', bauch:'Bauchumfang', huefte:'Hüftumfang', brust:'Brustumfang', oberschenkel:'Oberschenkel' };
+  document.getElementById('chart-titel').textContent = titel[ansicht] || 'Verlauf';
+  const p = aktivesProfile();
+  if (p) zeigeChart(p, ansicht);
 }
 
-function zeigeChart(p) {
+function zeigeChart(p, ansicht = 'gewicht') {
   const ctx = document.getElementById('chart').getContext('2d');
   if (chart) chart.destroy();
+
+  let labels, data, einheit, farbe;
+
+  if (ansicht === 'gewicht') {
+    labels = p.eintraege.map(e => e.datum);
+    data = p.eintraege.map(e => e.gewicht);
+    einheit = 'kg';
+    farbe = '#1D9E75';
+  } else {
+    // Körpermaße
+    const koerper = (p.koerper || []).filter(k => k[ansicht] !== null && k[ansicht] !== undefined);
+    labels = koerper.map(k => k.datum);
+    data = koerper.map(k => k[ansicht]);
+    einheit = 'cm';
+    farbe = '#378ADD';
+    if (data.length === 0) {
+      ctx.canvas.parentElement.querySelector('canvas').style.display = 'none';
+      const existing = ctx.canvas.parentElement.querySelector('.keine-daten');
+      if (!existing) {
+        const msg = document.createElement('p');
+        msg.className = 'keine-daten';
+        msg.style.cssText = 'color:#aaa;font-size:13px;text-align:center;padding:2rem 0;';
+        msg.textContent = 'Noch keine Körpermaße eingetragen.';
+        ctx.canvas.parentElement.appendChild(msg);
+      }
+      return;
+    }
+    ctx.canvas.style.display = '';
+    const existing = ctx.canvas.parentElement.querySelector('.keine-daten');
+    if (existing) existing.remove();
+  }
 
   const cursorPlugin = {
     id: 'cursorPlugin',
     afterDraw(chart) {
       if (chart._cursorX === undefined) return;
-      const ctx = chart.ctx;
-      const x = chart._cursorX;
-      const top = chart.chartArea.top;
-      const bottom = chart.chartArea.bottom;
-      ctx.save();
-      ctx.beginPath();
-      ctx.moveTo(x, top);
-      ctx.lineTo(x, bottom);
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = '#E24B4A';
-      ctx.stroke();
-      ctx.restore();
+      const ctx2 = chart.ctx;
+      ctx2.save();
+      ctx2.beginPath();
+      ctx2.moveTo(chart._cursorX, chart.chartArea.top);
+      ctx2.lineTo(chart._cursorX, chart.chartArea.bottom);
+      ctx2.lineWidth = 2;
+      ctx2.strokeStyle = '#E24B4A';
+      ctx2.stroke();
+      ctx2.restore();
     }
   };
 
   chart = new Chart(ctx, {
     type: 'line',
     data: {
-      labels: p.eintraege.map(e => e.datum),
-      datasets: [{ data: p.eintraege.map(e => e.gewicht), borderColor: '#1D9E75', backgroundColor: 'rgba(29,158,117,0.08)', borderWidth: 2, pointRadius: 4, tension: 0.3, fill: true }]
+      labels,
+      datasets: [{
+        data,
+        borderColor: farbe,
+        backgroundColor: farbe.replace(')', ',0.08)').replace('rgb','rgba'),
+        borderWidth: 2,
+        pointRadius: 4,
+        tension: 0.3,
+        fill: true
+      }]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
@@ -547,7 +1159,7 @@ function zeigeChart(p) {
           enabled: true,
           callbacks: {
             title: items => items[0].label,
-            label: item => item.parsed.y.toFixed(1) + ' kg'
+            label: item => item.parsed.y.toFixed(1) + ' ' + einheit
           }
         }
       },
@@ -555,12 +1167,12 @@ function zeigeChart(p) {
         y: { ticks: { font: { size: 11 }, color: '#888' }, grid: { color: 'rgba(0,0,0,0.05)' } },
         x: { ticks: { font: { size: 11 }, color: '#888', maxTicksLimit: 7 }, grid: { display: false } }
       },
-      onHover: (event, elements, chart) => {
+      onHover: (event, elements, ch) => {
         if (event.native) {
-          const rect = chart.canvas.getBoundingClientRect();
+          const rect = ch.canvas.getBoundingClientRect();
           const clientX = event.native.touches ? event.native.touches[0].clientX : event.native.clientX;
-          chart._cursorX = clientX - rect.left;
-          chart.draw();
+          ch._cursorX = clientX - rect.left;
+          ch.draw();
         }
       }
     },
@@ -574,20 +1186,17 @@ function zeigeChart(p) {
     const rect = canvas.getBoundingClientRect();
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const x = clientX - rect.left;
-    const chartArea = chart.chartArea;
-    if (x < chartArea.left || x > chartArea.right) return;
-
-    const pct = (x - chartArea.left) / (chartArea.right - chartArea.left);
-    const idx = Math.round(pct * (p.eintraege.length - 1));
-    const eintrag = p.eintraege[Math.min(Math.max(idx, 0), p.eintraege.length - 1)];
-
+    const ca = chart.chartArea;
+    if (x < ca.left || x > ca.right) return;
+    const pct = (x - ca.left) / (ca.right - ca.left);
+    const idx = Math.round(pct * (data.length - 1));
+    const val = data[Math.min(Math.max(idx, 0), data.length - 1)];
+    const lbl = labels[Math.min(Math.max(idx, 0), labels.length - 1)];
     chart._cursorX = x;
     chart.draw();
-
     tooltip.style.display = 'block';
     tooltip.style.left = Math.min(x + 10, rect.width - 120) + 'px';
-    const uhrzeit = eintrag.uhrzeit ? ` · ${eintrag.uhrzeit} Uhr` : '';
-    tooltip.innerHTML = `<strong>${eintrag.datum}${uhrzeit}</strong><br>${eintrag.gewicht.toFixed(1)} kg`;
+    tooltip.innerHTML = `<strong>${lbl}</strong><br>${parseFloat(val).toFixed(1)} ${einheit}`;
   }
 
   function handleLeave() {
@@ -596,37 +1205,17 @@ function zeigeChart(p) {
     tooltip.style.display = 'none';
   }
 
+  canvas.removeEventListener('mousemove', canvas._moveHandler);
+  canvas.removeEventListener('mouseleave', canvas._leaveHandler);
+  canvas._moveHandler = handleMove;
+  canvas._leaveHandler = handleLeave;
   canvas.addEventListener('mousemove', handleMove);
   canvas.addEventListener('touchmove', e => { e.preventDefault(); handleMove(e); }, { passive: false });
   canvas.addEventListener('mouseleave', handleLeave);
   canvas.addEventListener('touchend', handleLeave);
 }
 
-function toggleTag(btn) {
-  btn.classList.toggle('aktiv');
-  const typ = btn.dataset.tag;
-  if (gewaehlteTypen.includes(typ)) gewaehlteTypen = gewaehlteTypen.filter(t => t !== typ);
-  else gewaehlteTypen.push(typ);
-}
-
-function eintragSpeichern() {
-  const profile = ladeProfile();
-  const p = profile[aktivesProfilIndex];
-  const datum = document.getElementById('e-datum').value;
-  const gewicht = parseFloat(document.getElementById('e-gewicht').value);
-  const notiz = document.getElementById('e-notiz').value.trim();
-  if (!datum || !gewicht) { alert('Bitte Datum und Gewicht eingeben.'); return; }
-  const jetzt = new Date();
-  const uhrzeit = jetzt.getHours().toString().padStart(2,'0') + ':' + jetzt.getMinutes().toString().padStart(2,'0');
-  p.eintraege.push({ datum, gewicht, typen: [...gewaehlteTypen], notiz, uhrzeit });
-  p.eintraege.sort((a, b) => a.datum.localeCompare(b.datum));
-  speichereProfile(profile);
-  gewaehlteTypen = [];
-  document.querySelectorAll('.tag').forEach(t => t.classList.remove('aktiv'));
-  document.getElementById('e-gewicht').value = '';
-  document.getElementById('e-notiz').value = '';
-  wechsleTab('uebersicht');
-}
+// ========== VERLAUF ==========
 
 function zeigeVerlauf() {
   const p = aktivesProfile();
@@ -642,13 +1231,61 @@ function zeigeVerlauf() {
       diff = `<div class="eintrag-diff ${cls}">${sign}${d} kg</div>`;
     }
     const typen = e.typen && e.typen.length ? `<div class="eintrag-tags">${e.typen.join(' · ')}</div>` : '';
+    const stimmung = e.stimmung ? `<div class="eintrag-tags">${e.stimmung}</div>` : '';
+    const kcal = e.kalorien ? `<div class="eintrag-tags">🍽 ${e.kalorien} kcal</div>` : '';
+    const uhrzeitAnzeige = e.uhrzeit ? `<span style="font-size:11px;color:#bbb;margin-left:6px;">⏱ ${e.uhrzeit} Uhr</span>` : '';
     const notiz = e.notiz ? `<div class="eintrag-notiz">${e.notiz}</div>` : '';
+    const originalIndex = p.eintraege.findIndex(x => x.datum === e.datum && x.gewicht === e.gewicht);
     return `<div class="eintrag-item">
-      <div><div class="eintrag-datum">${e.datum}${e.uhrzeit ? ' · ' + e.uhrzeit + ' Uhr' : ''}</div>${typen}${notiz}</div>
-      <div><div class="eintrag-gewicht">${e.gewicht.toFixed(1)} kg</div>${diff}</div>
+      <div style="flex:1;">
+        <div class="eintrag-datum">${e.datum}${uhrzeitAnzeige}</div>
+        ${typen}${stimmung}${kcal}${notiz}
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+        <div class="eintrag-gewicht">${e.gewicht.toFixed(1)} kg</div>
+        ${diff}
+        <button onclick="eintragLoeschen(${originalIndex})" style="background:none;border:none;color:#ccc;cursor:pointer;font-size:16px;padding:2px 4px;line-height:1;" title="Eintrag löschen">🗑</button>
+      </div>
     </div>`;
   }).join('');
 }
+
+function eintragLoeschen(index) {
+  const p = aktivesProfile();
+  const eintrag = p.eintraege[index];
+  if (!eintrag) return;
+  const bestaetigt = confirm(
+    'Eintrag wirklich löschen?\n\n' +
+    'Datum: ' + eintrag.datum + (eintrag.uhrzeit ? ' · ' + eintrag.uhrzeit + ' Uhr' : '') + '\n' +
+    'Gewicht: ' + eintrag.gewicht.toFixed(1) + ' kg\n\n' +
+    'Diese Aktion kann nicht rückgängig gemacht werden.'
+  );
+  if (!bestaetigt) return;
+  const profile = ladeProfile();
+  profile[aktivesProfilIndex].eintraege.splice(index, 1);
+  speichereProfile(profile);
+  zeigeToast('🗑 Eintrag gelöscht');
+  zeigeVerlauf();
+}
+
+// ========== KALORIEN-VERLAUF (im Profil) ==========
+
+function zeigeKcalVerlauf() {
+  const p = aktivesProfile();
+  const container = document.getElementById('kcal-verlauf');
+  const mitKcal = [...p.eintraege].filter(e => e.kalorien).reverse().slice(0, 14);
+  if (mitKcal.length === 0) {
+    container.innerHTML = '<p style="color:#aaa;font-size:13px;">Noch keine Kalorien eingetragen.</p>';
+    return;
+  }
+  container.innerHTML = mitKcal.map(e => `
+    <div class="kcal-zeile">
+      <span class="kcal-datum">${e.datum}</span>
+      <span class="kcal-wert">${e.kalorien} kcal</span>
+    </div>`).join('');
+}
+
+// ========== AKTIVITÄTSFELDER ==========
 
 function zeigeAktivitaetFelder() {
   const typ = document.getElementById('km-aktivitaet-typ').value;
@@ -657,170 +1294,17 @@ function zeigeAktivitaetFelder() {
   const distanz = document.getElementById('km-feld-distanz');
   const gewicht = document.getElementById('km-feld-gewicht');
   const schritte = document.getElementById('km-feld-schritte');
-
   [dauer, distanz, gewicht, schritte].forEach(f => f.style.display = 'none');
-
   if (!typ) { felder.style.display = 'none'; return; }
   felder.style.display = 'block';
-
-  if (typ === 'laufen') { dauer.style.display = 'block'; distanz.style.display = 'block'; }
-  if (typ === 'radfahren') { dauer.style.display = 'block'; distanz.style.display = 'block'; }
-  if (typ === 'gehen') { dauer.style.display = 'block'; distanz.style.display = 'block'; }
-  if (typ === 'krafttraining') { dauer.style.display = 'block'; gewicht.style.display = 'block'; }
-  if (typ === 'schritte') { schritte.style.display = 'block'; }
+  if (typ === 'laufen') { dauer.style.display='block'; distanz.style.display='block'; }
+  if (typ === 'radfahren') { dauer.style.display='block'; distanz.style.display='block'; }
+  if (typ === 'gehen') { dauer.style.display='block'; distanz.style.display='block'; }
+  if (typ === 'krafttraining') { dauer.style.display='block'; gewicht.style.display='block'; }
+  if (typ === 'schritte') { schritte.style.display='block'; }
 }
 
-function koerperSpeichern() {
-  const profile = ladeProfile();
-  const p = profile[aktivesProfilIndex];
-  const datum = document.getElementById('km-datum').value;
-  if (!datum) { alert('Bitte ein Datum auswählen.'); return; }
-  if (!p.koerper) p.koerper = [];
-
-  const typ = document.getElementById('km-aktivitaet-typ').value;
-  const eintrag = {
-    datum,
-    bauch: document.getElementById('km-bauch').value ? parseFloat(document.getElementById('km-bauch').value) : null,
-    huefte: document.getElementById('km-huefte').value ? parseFloat(document.getElementById('km-huefte').value) : null,
-    brust: document.getElementById('km-brust').value ? parseFloat(document.getElementById('km-brust').value) : null,
-    oberschenkel: document.getElementById('km-oberschenkel').value ? parseFloat(document.getElementById('km-oberschenkel').value) : null,
-    aktivitaet: typ || null,
-    dauer: document.getElementById('km-dauer').value ? parseFloat(document.getElementById('km-dauer').value) : null,
-    distanz: document.getElementById('km-distanz').value ? parseFloat(document.getElementById('km-distanz').value) : null,
-    trainingsgewicht: document.getElementById('km-trainingsgewicht').value ? parseFloat(document.getElementById('km-trainingsgewicht').value) : null,
-    schritte: document.getElementById('km-schritte').value ? parseFloat(document.getElementById('km-schritte').value) : null,
-    notiz: document.getElementById('km-notiz').value.trim()
-  };
-
-  p.koerper.push(eintrag);
-  p.koerper.sort((a, b) => a.datum.localeCompare(b.datum));
-  speichereProfile(profile);
-
-  ['km-bauch','km-huefte','km-brust','km-oberschenkel','km-dauer','km-distanz','km-trainingsgewicht','km-schritte','km-notiz'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('km-aktivitaet-typ').value = '';
-  document.getElementById('km-aktivitaet-felder').style.display = 'none';
-
-  alert('Eintrag gespeichert!');
-  zeigeKoerperVerlauf();
-}
-
-function zeigeKoerperVerlauf() {
-  const p = aktivesProfile();
-  const container = document.getElementById('koerper-verlauf');
-  if (!p.koerper || p.koerper.length === 0) {
-    container.innerHTML = '<p style="color:#aaa;font-size:13px;text-align:center;padding:1rem 0;">Noch keine Einträge vorhanden.</p>';
-    return;
-  }
-  const aktivitaetLabel = { laufen: 'Laufen', radfahren: 'Radfahren', gehen: 'Gehen', krafttraining: 'Krafttraining', schritte: 'Schritte' };
-  const sortiert = [...p.koerper].reverse();
-  container.innerHTML = sortiert.map(e => {
-    const masse = [
-      e.bauch ? `Bauch: <strong>${e.bauch} cm</strong>` : '',
-      e.huefte ? `Hüfte: <strong>${e.huefte} cm</strong>` : '',
-      e.brust ? `Brust: <strong>${e.brust} cm</strong>` : '',
-      e.oberschenkel ? `Oberschenkel: <strong>${e.oberschenkel} cm</strong>` : ''
-    ].filter(Boolean).join(' &nbsp;·&nbsp; ');
-
-    const aktivitaet = e.aktivitaet ? [
-      `<strong>${aktivitaetLabel[e.aktivitaet] || e.aktivitaet}</strong>`,
-      e.dauer ? `${e.dauer} Min.` : '',
-      e.distanz ? `${e.distanz} km` : '',
-      e.trainingsgewicht ? `${e.trainingsgewicht} kg` : '',
-      e.schritte ? `${e.schritte} Schritte` : ''
-    ].filter(Boolean).join(' · ') : '';
-
-    const notiz = e.notiz ? `<div style="font-size:11px;color:#bbb;font-style:italic;margin-top:3px;">${e.notiz}</div>` : '';
-
-    return `<div style="padding:10px 0;border-bottom:0.5px solid rgba(0,0,0,0.08);">
-      <div style="font-size:13px;color:#888;margin-bottom:4px;">${e.datum}</div>
-      ${masse ? `<div style="font-size:12px;line-height:1.8;color:#888;">${masse}</div>` : ''}
-      ${aktivitaet ? `<div style="font-size:12px;line-height:1.8;color:#888;margin-top:2px;">${aktivitaet}</div>` : ''}
-      ${notiz}
-    </div>`;
-  }).join('');
-}
-
-function exportCSV() {
-  const p = aktivesProfile();
-  const zeilen = [['Datum','Gewicht (kg)','Bauch (cm)','Hüfte (cm)','Brust (cm)','Oberschenkel (cm)','Ausnahmen','Notiz']];
-
-  p.eintraege.forEach(e => {
-    const k = p.koerper ? p.koerper.find(k => k.datum === e.datum) : null;
-    zeilen.push([
-      e.datum,
-      e.gewicht.toFixed(1),
-      k && k.bauch ? k.bauch : '',
-      k && k.huefte ? k.huefte : '',
-      k && k.brust ? k.brust : '',
-      k && k.oberschenkel ? k.oberschenkel : '',
-      e.typen && e.typen.length ? e.typen.join(', ') : '',
-      e.notiz || ''
-    ]);
-  });
-
-  const inhalt = zeilen.map(z => z.map(zelle => `"${zelle}"`).join(';')).join('\n');
-  const blob = new Blob(['\uFEFF' + inhalt], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = p.name + '_Gewichtsverlauf.csv';
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function exportPDF() {
-  const p = aktivesProfile();
-  const heute = new Date().toLocaleDateString('de-DE');
-  const letzt = p.eintraege[p.eintraege.length-1].gewicht;
-  const abgen = Math.max(0, p.start - letzt).toFixed(1);
-  const bmi = (letzt / ((p.groesse / 100) ** 2)).toFixed(1);
-
-  const zeilen = p.eintraege.map(e => {
-    const k = p.koerper ? p.koerper.find(k => k.datum === e.datum) : null;
-    return `<tr>
-      <td>${e.datum}</td>
-      <td>${e.gewicht.toFixed(1)} kg</td>
-      <td>${k && k.bauch ? k.bauch + ' cm' : '–'}</td>
-      <td>${k && k.huefte ? k.huefte + ' cm' : '–'}</td>
-      <td>${k && k.brust ? k.brust + ' cm' : '–'}</td>
-      <td>${k && k.oberschenkel ? k.oberschenkel + ' cm' : '–'}</td>
-    </tr>`;
-  }).join('');
-
-  const html = `<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"/>
-  <title>Gewichtsverlauf ${p.name}</title>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 2rem; color: #1a1a1a; }
-    h1 { font-size: 22px; margin-bottom: 0.25rem; }
-    .meta { font-size: 13px; color: #888; margin-bottom: 1.5rem; }
-    .zusammenfassung { display: flex; gap: 2rem; margin-bottom: 1.5rem; }
-    .box { background: #f5f5f0; border-radius: 8px; padding: 0.75rem 1rem; }
-    .box-label { font-size: 11px; color: #888; }
-    .box-wert { font-size: 20px; font-weight: bold; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    th { background: #f5f5f0; padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
-    td { padding: 7px 8px; border-bottom: 0.5px solid #eee; }
-    @media print { body { padding: 1rem; } }
-  </style></head><body>
-  <h1>Gewichtsverlauf – ${p.name}</h1>
-  <p class="meta">Erstellt am ${heute}</p>
-  <div class="zusammenfassung">
-    <div class="box"><div class="box-label">Startgewicht</div><div class="box-wert">${p.start.toFixed(1)} kg</div></div>
-    <div class="box"><div class="box-label">Aktuell</div><div class="box-wert">${letzt.toFixed(1)} kg</div></div>
-    <div class="box"><div class="box-label">Abgenommen</div><div class="box-wert">${abgen} kg</div></div>
-    <div class="box"><div class="box-label">BMI</div><div class="box-wert">${bmi}</div></div>
-  </div>
-  <table>
-    <thead><tr><th>Datum</th><th>Gewicht</th><th>Bauch</th><th>Hüfte</th><th>Brust</th><th>Oberschenkel</th></tr></thead>
-    <tbody>${zeilen}</tbody>
-  </table>
-  <script>window.onload = () => window.print();<\/script>
-  </body></html>`;
-
-  const blob = new Blob([html], { type: 'text/html;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  window.open(url, '_blank');
-}
+// ========== PROFIL ANZEIGE ==========
 
 function zeigeProfil() {
   const p = aktivesProfile();
@@ -831,9 +1315,92 @@ function zeigeProfil() {
       <tr><td style="padding:6px 0;color:#888;">Größe</td><td style="text-align:right;font-weight:500;">${p.groesse} cm</td></tr>
       <tr><td style="padding:6px 0;color:#888;">Startgewicht</td><td style="text-align:right;font-weight:500;">${p.start.toFixed(1)} kg</td></tr>
       <tr><td style="padding:6px 0;color:#888;">Zielgewicht</td><td style="text-align:right;font-weight:500;">${p.ziel.toFixed(1)} kg</td></tr>
-      <tr><td style="padding:6px 0;color:#888;">Einträge</td><td style="text-align:right;font-weight:500;">${p.eintraege.length}</td></tr>
+      <tr><td style="padding:6px 0;color:#888;">Modus</td><td style="text-align:right;font-weight:500;">${p.haltegewichtModus ? '🏁 Haltephase' : '💪 Abnehmen'}</td></tr>
+      <tr><td style="padding:6px 0;color:#888;">Gewichts-Einträge</td><td style="text-align:right;font-weight:500;">${p.eintraege.length}</td></tr>
     </table>`;
 }
+
+// ========== EXPORT ==========
+
+function exportCSV() {
+  const p = aktivesProfile();
+  const zeilen = [['Datum','Uhrzeit','Gewicht (kg)','Kalorien','Stimmung','Bauch (cm)','Hüfte (cm)','Brust (cm)','Oberschenkel (cm)','Tags','Notiz']];
+  p.eintraege.forEach(e => {
+    const k = p.koerper ? p.koerper.find(k => k.datum === e.datum) : null;
+    zeilen.push([
+      e.datum,
+      e.uhrzeit ? e.uhrzeit + ' Uhr' : '',
+      e.gewicht.toFixed(1),
+      e.kalorien || '',
+      e.stimmung || '',
+      k && k.bauch ? k.bauch : '',
+      k && k.huefte ? k.huefte : '',
+      k && k.brust ? k.brust : '',
+      k && k.oberschenkel ? k.oberschenkel : '',
+      e.typen && e.typen.length ? e.typen.join(', ') : '',
+      e.notiz || ''
+    ]);
+  });
+  const inhalt = zeilen.map(z => z.map(zelle => `"${zelle}"`).join(';')).join('\n');
+  const blob = new Blob(['\uFEFF' + inhalt], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = p.name + '_Gewichtsverlauf.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportPDF() {
+  const p = aktivesProfile();
+  const heuteDatum = new Date().toLocaleDateString('de-DE');
+  const letzt = p.eintraege[p.eintraege.length-1].gewicht;
+  const abgen = Math.max(0, p.start - letzt).toFixed(1);
+  const bmi = (letzt / ((p.groesse / 100) ** 2)).toFixed(1);
+
+  const zeilen = p.eintraege.map(e => {
+    const k = p.koerper ? p.koerper.find(k => k.datum === e.datum) : null;
+    return `<tr>
+      <td>${e.datum}${e.uhrzeit ? '<br><span style="color:#aaa;font-size:11px;">⏱ ' + e.uhrzeit + ' Uhr</span>' : ''}</td>
+      <td>${e.gewicht.toFixed(1)} kg</td>
+      <td>${e.kalorien ? e.kalorien + ' kcal' : '–'}</td>
+      <td>${k && k.bauch ? k.bauch + ' cm' : '–'}</td>
+      <td>${k && k.huefte ? k.huefte + ' cm' : '–'}</td>
+    </tr>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"/>
+  <title>Gewichtsverlauf ${p.name}</title>
+  <style>
+    body{font-family:Arial,sans-serif;padding:2rem;color:#1a1a1a;}
+    h1{font-size:22px;margin-bottom:0.25rem;}
+    .meta{font-size:13px;color:#888;margin-bottom:1.5rem;}
+    .zusammenfassung{display:flex;gap:2rem;margin-bottom:1.5rem;flex-wrap:wrap;}
+    .box{background:#f5f5f0;border-radius:8px;padding:0.75rem 1rem;}
+    .box-label{font-size:11px;color:#888;}
+    .box-wert{font-size:20px;font-weight:bold;}
+    table{width:100%;border-collapse:collapse;font-size:13px;}
+    th{background:#f5f5f0;padding:8px;text-align:left;border-bottom:1px solid #ddd;}
+    td{padding:7px 8px;border-bottom:0.5px solid #eee;}
+  </style></head><body>
+  <h1>Gewichtsverlauf – ${p.name}</h1>
+  <p class="meta">Erstellt am ${heuteDatum} &nbsp;|&nbsp; Modus: ${p.haltegewichtModus ? 'Haltephase' : 'Abnehmen'}</p>
+  <div class="zusammenfassung">
+    <div class="box"><div class="box-label">Startgewicht</div><div class="box-wert">${p.start.toFixed(1)} kg</div></div>
+    <div class="box"><div class="box-label">Aktuell</div><div class="box-wert">${letzt.toFixed(1)} kg</div></div>
+    <div class="box"><div class="box-label">Abgenommen</div><div class="box-wert">${abgen} kg</div></div>
+    <div class="box"><div class="box-label">BMI</div><div class="box-wert">${bmi}</div></div>
+  </div>
+  <table>
+    <thead><tr><th>Datum</th><th>Gewicht</th><th>Kalorien</th><th>Bauch</th><th>Hüfte</th></tr></thead>
+    <tbody>${zeilen}</tbody>
+  </table>
+  <script>window.onload=()=>window.print();<\/script>
+  </body></html>`;
+
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8;' });
+  window.open(URL.createObjectURL(blob), '_blank');
+}
+
 </script>
 </body>
 </html>
+
