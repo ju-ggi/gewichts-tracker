@@ -6,6 +6,7 @@
 <title>Gewichts-Tracker</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link rel="stylesheet" href="style.css"/>
+<script src="js/daten.js"></script>
 </head>
 <body>
 
@@ -294,30 +295,6 @@ let aktuelleChartAnsicht = 'gewicht';
 let chart = null;
 let datumManuell = false;      // Zeigt ob Nutzer Datum manuell gewählt hat
 
-// ========== HILFSFUNKTIONEN ==========
-
-function ladeProfile() {
-  try { return JSON.parse(localStorage.getItem('wt_profile') || '[]'); }
-  catch(e) { return []; }
-}
-function speichereProfile(p) { localStorage.setItem('wt_profile', JSON.stringify(p)); }
-function aktivesProfile() { return ladeProfile()[aktivesProfilIndex]; }
-
-function heute() { return new Date().toISOString().split('T')[0]; }
-
-function formatDatum(iso) {
-  // Wandelt "2026-04-20" in "20.04.2026" um
-  const [y,m,d] = iso.split('-');
-  return `${d}.${m}.${y}`;
-}
-
-function jetztuhrzeit() {
-  // Gibt aktuelle Uhrzeit als "HH:MM" zurück, z.B. "07:32"
-  const now = new Date();
-  const h = String(now.getHours()).padStart(2, '0');   // padStart stellt sicher: 7 → "07"
-  const m = String(now.getMinutes()).padStart(2, '0');
-  return `${h}:${m}`;
-}
 
 // ========== TOAST-FEEDBACK ==========
 
@@ -1249,7 +1226,8 @@ function exportPDF() {
 
   const html = `<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"/>
   <title>Gewichtsverlauf ${p.name}</title>
-  <link rel="stylesheet" href="style.css"/></head><body>
+  <link rel="stylesheet" href="style.css"/>
+<script src="js/daten.js"></script></head><body>
   <h1>Gewichtsverlauf – ${p.name}</h1>
   <p class="meta">Erstellt am ${heuteDatum} &nbsp;|&nbsp; Modus: ${p.haltegewichtModus ? 'Haltephase' : 'Abnehmen'}</p>
   <div class="zusammenfassung">
