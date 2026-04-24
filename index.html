@@ -5,131 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Gewichts-Tracker</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<style>
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a1a;min-height:100vh;}
-.versteckt{display:none!important;}
-.zentriert{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:1rem;}
-.setup-karte{background:white;border-radius:20px;padding:2rem 1.5rem;width:100%;max-width:380px;border:0.5px solid rgba(0,0,0,0.08);}
-.logo{font-size:40px;text-align:center;margin-bottom:0.5rem;}
-.titel{font-size:20px;font-weight:500;text-align:center;margin-bottom:0.25rem;}
-.untertitel{font-size:13px;color:#888;text-align:center;margin-bottom:1.5rem;}
-.app{width:100%;max-width:1200px;margin:0 auto;padding:1rem;padding-bottom:80px;}
-.seiten-titel{font-size:22px;font-weight:500;margin-bottom:1.25rem;}
-.karte{background:white;border:0.5px solid rgba(0,0,0,0.1);border-radius:16px;padding:1.25rem;margin-bottom:1rem;}
-.abschnitt{font-size:13px;color:#888;margin-bottom:0.5rem;font-weight:500;}
-.gross{font-size:36px;font-weight:500;}
-.einheit{font-size:16px;color:#888;margin-left:4px;}
-.metrik-raster{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem;}
-.metrik{background:#f5f5f0;border-radius:12px;padding:0.75rem 1rem;}
-.metrik-label{font-size:12px;color:#888;margin-bottom:4px;}
-.metrik-wert{font-size:20px;font-weight:500;}
-.metrik-wert.gruen{color:#0F6E56;}
-.balken{background:#e8e8e8;border-radius:99px;height:8px;margin:10px 0 6px;overflow:hidden;}
-.balken-fill{background:#1D9E75;height:100%;border-radius:99px;transition:width 0.6s ease;}
-.balken-text{font-size:12px;color:#888;}
-.btn{width:100%;padding:12px;border-radius:12px;border:0.5px solid rgba(0,0,0,0.15);background:transparent;color:#1a1a1a;font-size:15px;cursor:pointer;margin-bottom:8px;font-family:inherit;}
-.btn:hover{background:#f5f5f0;}
-.btn.primaer{background:#1D9E75;color:white;border-color:#1D9E75;font-weight:500;}
-.btn.primaer:hover{background:#0F6E56;}
-.btn.gefahr{background:#993C1D;color:white;border-color:#993C1D;}
-.btn.gefahr:hover{background:#7a2f15;}
-label{font-size:13px;color:#888;display:block;margin-bottom:4px;}
-input,textarea,select{width:100%;padding:10px 12px;border-radius:10px;border:0.5px solid rgba(0,0,0,0.2);background:white;color:#1a1a1a;font-size:15px;margin-bottom:12px;font-family:inherit;}
-input:focus,textarea:focus,select:focus{outline:none;border-color:#1D9E75;box-shadow:0 0 0 3px rgba(29,158,117,0.1);}
-input.fehler-feld{border-color:#993C1D!important;}
-textarea{resize:vertical;min-height:70px;}
-.fehler{color:#993C1D;font-size:13px;margin-bottom:10px;}
-.tag-raster{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px;}
-.tag{padding:6px 12px;border:0.5px solid rgba(0,0,0,0.15);border-radius:99px;font-size:13px;cursor:pointer;background:transparent;color:#555;font-family:inherit;}
-.tag.aktiv{background:#e1f5ee;color:#0F6E56;border-color:#9FE1CB;}
-.tag.stimmung-gut.aktiv{background:#e1f5ee;color:#0F6E56;border-color:#9FE1CB;}
-.tag.stimmung-neutral.aktiv{background:#faeeda;color:#633806;border-color:#FAC775;}
-.tag.stimmung-schlecht.aktiv{background:#fde8e3;color:#993C1D;border-color:#F4A090;}
-.eintrag-item{display:flex;justify-content:space-between;align-items:flex-start;padding:12px 0;border-bottom:0.5px solid rgba(0,0,0,0.08);}
-.eintrag-item:last-child{border-bottom:none;}
-.eintrag-datum{font-size:13px;color:#888;}
-.eintrag-tags{font-size:11px;color:#aaa;margin-top:2px;}
-.eintrag-notiz{font-size:11px;color:#bbb;margin-top:2px;font-style:italic;}
-.eintrag-gewicht{font-size:16px;font-weight:500;text-align:right;}
-.eintrag-diff{font-size:12px;margin-top:2px;text-align:right;}
-.eintrag-diff.runter{color:#0F6E56;}
-.eintrag-diff.hoch{color:#993C1D;}
-.meilenstein{background:#e1f5ee;border:0.5px solid #9FE1CB;border-radius:10px;padding:10px 14px;margin-bottom:8px;font-size:13px;color:#0F6E56;}
-.chart-box{position:relative;height:220px;margin-top:8px;}
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:white;border-top:0.5px solid rgba(0,0,0,0.1);display:flex;padding:8px 0 16px;}
-.nav-btn{flex:1;background:none;border:none;font-size:11px;color:#888;cursor:pointer;padding:6px;display:flex;flex-direction:column;align-items:center;gap:3px;}
-.nav-btn.aktiv{color:#1D9E75;}
-.nav-icon{font-size:20px;line-height:1;}
-.profil-item{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:0.5px solid rgba(0,0,0,0.08);cursor:pointer;}
-.profil-item:last-child{border-bottom:none;}
-.profil-avatar{width:40px;height:40px;border-radius:50%;background:#e1f5ee;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:500;color:#0F6E56;margin-right:12px;flex-shrink:0;}
-.zurueck{background:none;border:none;color:#888;cursor:pointer;font-size:14px;padding:0;margin-bottom:1rem;font-family:inherit;}
-.hinweis{background:#faeeda;border:0.5px solid #FAC775;border-radius:12px;padding:12px 14px;margin-bottom:1rem;font-size:13px;color:#633806;display:flex;align-items:flex-start;gap:10px;}
-.hinweis.gruen{background:#e1f5ee;border-color:#9FE1CB;color:#0F6E56;}
-.hinweis.rot{background:#fde8e3;border-color:#F4A090;color:#993C1D;}
-.wasser-gläser{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0;}
-.glas{width:38px;height:38px;border-radius:8px;border:0.5px solid rgba(0,0,0,0.15);background:#f5f5f0;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;}
-.glas.voll{background:#B5D4F4;border-color:#378ADD;}
-.wasser-text{font-size:13px;color:#888;}
-
-/* Ampel */
-.ampel{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:12px;margin-bottom:1rem;font-size:14px;font-weight:500;}
-.ampel.gruen{background:#e1f5ee;color:#0F6E56;border:0.5px solid #9FE1CB;}
-.ampel.gelb{background:#faeeda;color:#633806;border:0.5px solid #FAC775;}
-.ampel.rot{background:#fde8e3;color:#993C1D;border:0.5px solid #F4A090;}
-.ampel-kreis{width:14px;height:14px;border-radius:50%;flex-shrink:0;}
-.ampel.gruen .ampel-kreis{background:#1D9E75;}
-.ampel.gelb .ampel-kreis{background:#FAC775;}
-.ampel.rot .ampel-kreis{background:#993C1D;}
-
-/* Toast-Feedback */
-#toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#0F6E56;color:white;padding:10px 20px;border-radius:99px;font-size:14px;font-weight:500;z-index:9999;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;}
-#toast.sichtbar{opacity:1;}
-
-/* Schnelleingabe auf Übersicht */
-.schnell-eingabe{display:flex;gap:8px;align-items:flex-end;margin-top:8px;}
-.schnell-eingabe input{margin-bottom:0;flex:1;}
-.schnell-eingabe button{flex-shrink:0;padding:10px 16px;border-radius:10px;border:none;background:#1D9E75;color:white;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;}
-.schnell-eingabe button:hover{background:#0F6E56;}
-
-/* Datum-Toggle */
-.datum-toggle{font-size:12px;color:#1D9E75;cursor:pointer;margin-bottom:8px;text-decoration:underline;background:none;border:none;font-family:inherit;padding:0;}
-
-/* Wochenzusammenfassung */
-.woche-karte{background:#f5f5f0;border-radius:12px;padding:1rem;margin-bottom:8px;}
-.woche-karte h4{font-size:14px;font-weight:500;margin-bottom:6px;}
-.woche-stat{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;color:#555;}
-
-/* Kalorientracker */
-.kcal-zeile{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid rgba(0,0,0,0.06);font-size:13px;}
-.kcal-datum{color:#888;}
-.kcal-wert{font-weight:500;}
-
-/* Haltegewicht-Modus */
-.haltegewicht-badge{background:#e1f5ee;color:#0F6E56;border:0.5px solid #9FE1CB;border-radius:99px;font-size:12px;padding:3px 10px;display:inline-block;margin-left:8px;}
-
-/* Körpermaß-Diagramm Tabs */
-.chart-tab-reihe{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;}
-.chart-tab{padding:5px 12px;border-radius:99px;border:0.5px solid rgba(0,0,0,0.15);background:transparent;font-size:12px;cursor:pointer;font-family:inherit;color:#555;}
-.chart-tab.aktiv{background:#1D9E75;color:white;border-color:#1D9E75;}
-
-/* Eigene Tags */
-.eigener-tag-bereich{margin-top:6px;}
-.eigener-tag-eingabe{display:flex;gap:6px;margin-top:6px;}
-.eigener-tag-eingabe input{margin-bottom:0;flex:1;}
-.eigener-tag-eingabe button{flex-shrink:0;padding:10px 14px;border-radius:10px;border:none;background:#f5f5f0;font-size:13px;cursor:pointer;font-family:inherit;}
-
-/* Seiten-Raster */
-.seiten-raster{display:grid;grid-template-columns:1fr;gap:0;}
-@media(min-width:768px){
-  .seiten-raster{grid-template-columns:1fr 1fr;gap:1rem;align-items:start;}
-  .seiten-raster .volle-breite{grid-column:1/-1;}
-  .metrik-raster{grid-template-columns:repeat(4,1fr);}
-  .chart-box{height:260px;}
-  .bottom-nav{max-width:1200px;left:50%;transform:translateX(-50%);border-radius:16px 16px 0 0;border:0.5px solid rgba(0,0,0,0.1);}
-}
-</style>
+<link rel="stylesheet" href="style.css"/>
 </head>
 <body>
 
@@ -1373,18 +1249,7 @@ function exportPDF() {
 
   const html = `<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"/>
   <title>Gewichtsverlauf ${p.name}</title>
-  <style>
-    body{font-family:Arial,sans-serif;padding:2rem;color:#1a1a1a;}
-    h1{font-size:22px;margin-bottom:0.25rem;}
-    .meta{font-size:13px;color:#888;margin-bottom:1.5rem;}
-    .zusammenfassung{display:flex;gap:2rem;margin-bottom:1.5rem;flex-wrap:wrap;}
-    .box{background:#f5f5f0;border-radius:8px;padding:0.75rem 1rem;}
-    .box-label{font-size:11px;color:#888;}
-    .box-wert{font-size:20px;font-weight:bold;}
-    table{width:100%;border-collapse:collapse;font-size:13px;}
-    th{background:#f5f5f0;padding:8px;text-align:left;border-bottom:1px solid #ddd;}
-    td{padding:7px 8px;border-bottom:0.5px solid #eee;}
-  </style></head><body>
+  <link rel="stylesheet" href="style.css"/></head><body>
   <h1>Gewichtsverlauf – ${p.name}</h1>
   <p class="meta">Erstellt am ${heuteDatum} &nbsp;|&nbsp; Modus: ${p.haltegewichtModus ? 'Haltephase' : 'Abnehmen'}</p>
   <div class="zusammenfassung">
