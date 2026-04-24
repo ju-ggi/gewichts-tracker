@@ -1097,6 +1097,7 @@ function zeigeChart(p, ansicht = 'gewicht') {
     data = p.eintraege.map(e => e.gewicht);
     einheit = 'kg';
     farbe = '#1D9E75';
+    const uhrzeiten = p.eintraege.map(e => e.uhrzeit || null);
   } else {
     // Körpermaße
     const koerper = (p.koerper || []).filter(k => k[ansicht] !== null && k[ansicht] !== undefined);
@@ -1196,7 +1197,10 @@ function zeigeChart(p, ansicht = 'gewicht') {
     chart.draw();
     tooltip.style.display = 'block';
     tooltip.style.left = Math.min(x + 10, rect.width - 120) + 'px';
-    tooltip.innerHTML = `<strong>${lbl}</strong><br>${parseFloat(val).toFixed(1)} ${einheit}`;
+    const uhrzeit = (ansicht === 'gewicht' && p.eintraege[Math.min(Math.max(idx, 0), p.eintraege.length - 1)].uhrzeit)
+      ? ' · ' + p.eintraege[Math.min(Math.max(idx, 0), p.eintraege.length - 1)].uhrzeit + ' Uhr'
+      : '';
+    tooltip.innerHTML = `<strong>${lbl}${uhrzeit}</strong><br>${parseFloat(val).toFixed(1)} ${einheit}`;
   }
 
   function handleLeave() {
@@ -1403,4 +1407,3 @@ function exportPDF() {
 </script>
 </body>
 </html>
-
