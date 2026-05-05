@@ -128,6 +128,21 @@
         </div>
 
         <div class="karte volle-breite">
+          <p class="abschnitt">🍽 Kalorien heute</p>
+          <div id="kalorienziel-anzeige" style="font-size:14px;"></div>
+        </div>
+
+        <div class="karte">
+          <p class="abschnitt">💪 Körperfett</p>
+          <div id="koerperfett-anzeige" style="font-size:14px;"></div>
+        </div>
+
+        <div class="karte">
+          <p class="abschnitt">😴 Schlaf</p>
+          <div id="schlaf-anzeige" style="font-size:14px;"></div>
+        </div>
+
+        <div class="karte volle-breite">
           <p class="abschnitt">📊 Ø 7-Tage-Durchschnitt</p>
           <div id="wochen-schnitt" style="font-size:14px;"></div>
         </div>
@@ -186,6 +201,9 @@
         <label>Kalorien (kcal, optional)</label>
         <input type="number" id="e-kalorien" placeholder="z. B. 1800" step="10" min="0" max="10000"/>
 
+        <label>Schlaf letzte Nacht (Stunden, optional)</label>
+        <input type="number" id="e-schlaf" placeholder="z. B. 7.5" step="0.5" min="0" max="24"/>
+
         <label>Stimmung</label>
         <div class="tag-raster" id="stimmung-tags">
           <button class="tag stimmung-gut" onclick="toggleStimmung(this,'😊 Gut')">😊 Gut</button>
@@ -223,7 +241,9 @@
           <div><label>Hüfte (cm)</label><input type="number" id="km-huefte" placeholder="z. B. 105" step="0.1"/></div>
           <div><label>Brust (cm)</label><input type="number" id="km-brust" placeholder="z. B. 100" step="0.1"/></div>
           <div><label>Oberschenkel (cm)</label><input type="number" id="km-oberschenkel" placeholder="z. B. 60" step="0.1"/></div>
+          <div><label>Hals (cm) 💪</label><input type="number" id="km-hals" placeholder="z. B. 38" step="0.1"/></div>
         </div>
+        <p style="font-size:11px;color:#bbb;margin-top:6px;">💪 Halsumfang wird für die Körperfett-Berechnung benötigt.</p>
       </div>
 
       <!-- AKTIVITÄT-KARTE -->
@@ -274,6 +294,12 @@
       <div class="karte">
         <p class="abschnitt">Kalorien-Verlauf</p>
         <div id="kcal-verlauf"></div>
+      </div>
+
+      <!-- Schlaf-Verlauf -->
+      <div class="karte">
+        <p class="abschnitt">😴 Schlaf-Verlauf</p>
+        <div id="schlaf-verlauf"></div>
       </div>
 
       <!-- BMR / Kalorienbedarf -->
@@ -406,7 +432,7 @@ function wechsleTab(tab) {
     zeigeZielAnpassungKarte();
     const p = aktivesProfile();
     zeigeBMR(p);
-    // BMR-Felder vorausfüllen wenn bereits gespeichert
+    zeigeSchlafVerlauf(p);
     if (p.alter)      document.getElementById('bmr-alter').value = p.alter;
     if (p.geschlecht) document.getElementById('bmr-geschlecht').value = p.geschlecht;
     if (p.aktivitaet) document.getElementById('bmr-aktivitaet').value = p.aktivitaet;
@@ -585,6 +611,7 @@ function allesSpreichern() {
   const gewichtVal = parseFloat(document.getElementById('e-gewicht').value);
   const notiz = document.getElementById('e-notiz').value.trim();
   const kalorien = document.getElementById('e-kalorien').value ? parseInt(document.getElementById('e-kalorien').value) : null;
+  const schlaf   = document.getElementById('e-schlaf').value ? parseFloat(document.getElementById('e-schlaf').value) : null;
 
   if (!gewichtVal) { zeigeToast('⚠ Bitte Gewicht eingeben', '#993C1D'); return; }
 
@@ -592,11 +619,12 @@ function allesSpreichern() {
   const idx = p.eintraege.findIndex(e => e.datum === datum);
   const eintrag = {
     datum,
-    uhrzeit: datumManuell ? null : jetztuhrzeit(), // Uhrzeit nur bei "heute"-Einträgen automatisch
+    uhrzeit: datumManuell ? null : jetztuhrzeit(),
     gewicht: gewichtVal,
     typen: [...gewaehlteTypen],
     notiz,
     kalorien,
+    schlaf,
     stimmung: gewaehlteStimmung
   };
   if (idx >= 0) p.eintraege[idx] = eintrag;
@@ -608,12 +636,13 @@ function allesSpreichern() {
   const huefte = document.getElementById('km-huefte').value ? parseFloat(document.getElementById('km-huefte').value) : null;
   const brust = document.getElementById('km-brust').value ? parseFloat(document.getElementById('km-brust').value) : null;
   const oberschenkel = document.getElementById('km-oberschenkel').value ? parseFloat(document.getElementById('km-oberschenkel').value) : null;
+  const hals = document.getElementById('km-hals').value ? parseFloat(document.getElementById('km-hals').value) : null;
   const typ = document.getElementById('km-aktivitaet-typ').value;
 
-  if (bauch || huefte || brust || oberschenkel || typ) {
+  if (bauch || huefte || brust || oberschenkel || hals || typ) {
     const koerperEintrag = {
       datum,
-      bauch, huefte, brust, oberschenkel,
+      bauch, huefte, brust, oberschenkel, hals,
       aktivitaet: typ || null,
       dauer: document.getElementById('km-dauer').value ? parseFloat(document.getElementById('km-dauer').value) : null,
       distanz: document.getElementById('km-distanz').value ? parseFloat(document.getElementById('km-distanz').value) : null,
@@ -632,7 +661,7 @@ function allesSpreichern() {
   gewaehlteTypen = [];
   gewaehlteStimmung = null;
   document.querySelectorAll('#tag-raster-gewicht .tag, #eigene-tags-anzeige .tag, #stimmung-tags .tag').forEach(t => t.classList.remove('aktiv'));
-  ['e-gewicht','e-notiz','e-kalorien','km-bauch','km-huefte','km-brust','km-oberschenkel','km-dauer','km-distanz','km-trainingsgewicht','km-schritte','km-notiz'].forEach(id => document.getElementById(id).value = '');
+  ['e-gewicht','e-notiz','e-kalorien','e-schlaf','km-bauch','km-huefte','km-brust','km-oberschenkel','km-hals','km-dauer','km-distanz','km-trainingsgewicht','km-schritte','km-notiz'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('km-aktivitaet-typ').value = '';
   document.getElementById('km-aktivitaet-felder').style.display = 'none';
   document.getElementById('gewicht-fehler').classList.add('versteckt');

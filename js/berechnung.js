@@ -357,3 +357,90 @@ function berechneTDEE(bmr, aktivitaetsLevel) {
   const faktor = faktoren[aktivitaetsLevel] || 1.2;
   return Math.round(bmr * faktor);
 }
+
+
+// ========== KÖRPERFETT (NAVY-METHODE) ==========
+
+/**
+ * Schätzt den Körperfettanteil nach der U.S. Navy Formel.
+ * Genauer als BMI weil Körpermaße statt nur Gewicht genutzt werden.
+ *
+ * Formel Männer:  495 / (1.0324 - 0.19077 × log10(bauch - hals) + 0.15456 × log10(groesse)) - 450
+ * Formel Frauen:  495 / (1.29579 - 0.35004 × log10(bauch + huefte - hals) + 0.22100 × log10(groesse)) - 450
+ *
+ * @param {number} groesse    – Körpergröße in cm
+ * @param {number} bauch      – Bauchumfang in cm (auf Nabelhöhe)
+ * @param {number} huefte     – Hüftumfang in cm (nur Frauen)
+ * @param {number} hals       – Halsumfang in cm
+ * @param {string} geschlecht – 'm' oder 'w'
+ * @returns {number|null} Körperfettanteil in % oder null (Fehler)
+ */
+function berechneKoerperfett(groesse, bauch, huefte, hals, geschlecht) {
+  // Sicherheit: ungültige Werte abfangen
+  if (!groesse || !bauch || !hals) return null;
+  if (geschlecht === 'w' && !huefte) return null;
+
+  // log10 = Logarithmus zur Basis 10 (eingebaut in JavaScript)
+  if (geschlecht === 'm') {
+    const diff = bauch - hals;
+    if (diff <= 0) return null;                // Verhindert log10 von negativer Zahl
+    return 495 / (1.0324 - 0.19077 * Math.log10(diff) + 0.15456 * Math.log10(groesse)) - 450;
+  } else {
+    const diff = bauch + huefte - hals;
+    if (diff <= 0) return null;
+    return 495 / (1.29579 - 0.35004 * Math.log10(diff) + 0.22100 * Math.log10(groesse)) - 450;
+  }
+}
+
+/**
+ * Bewertet den Körperfettanteil mit einer Kategorie.
+ * Kategorien unterscheiden sich je nach Geschlecht.
+ *
+ * @param {number} kf         – Körperfettanteil in %
+ * @param {string} geschlecht – 'm' oder 'w'
+ * @returns {object} { kategorie, farbe }
+ */
+function bewerteKoerperfett(kf, geschlecht) {
+  // Referenzwerte: American Council on Exercise (ACE)
+  if (geschlecht === 'm') {
+    if (kf < 6)  return { kategorie: 'Essentiell (sehr niedrig)', farbe: '#378ADD' };
+    if (kf < 14) return { kategorie: 'Athlet', farbe: '#0F6E56' };
+    if (kf < 18) return { kategorie: 'Fitness', farbe: '#1D9E75' };
+    if (kf < 25) return { kategorie: 'Durchschnitt', farbe: '#BA7517' };
+    return       { kategorie: 'Übergewicht', farbe: '#993C1D' };
+  } else {
+    if (kf < 14) return { kategorie: 'Essentiell (sehr niedrig)', farbe: '#378ADD' };
+    if (kf < 21) return { kategorie: 'Athletin', farbe: '#0F6E56' };
+    if (kf < 25) return { kategorie: 'Fitness', farbe: '#1D9E75' };
+    if (kf < 32) return { kategorie: 'Durchschnitt', farbe: '#BA7517' };
+    return       { kategorie: 'Übergewicht', farbe: '#993C1D' };
+  }
+}
+
+
+// ========== SCHLAF-AUSWERTUNG ==========
+
+/**
+ * Berechnet den Durchschnitt der letzten Schlafeinträge.
+ * Schlaf wird pro Tag in Stunden gespeichert (z.B. 7.5).
+ *
+ * @param {Array} eintraege – alle Gewichtseinträge (mit optionalem .schlaf Feld)
+ * @returns {object|null} { schnitt, letzteEintraege } oder null
+ */
+function berechneDurchschnittSchlaf(eintraege) {
+  // Nur Einträge mit Schlaf-Daten, neueste zuerst
+  const mitSchlaf = [...eintraege]
+    .filter(e => e.schlaf && e.schlaf > 0)
+    .sort((a, b) => b.datum.localeCompare(a.datum));
+
+  if (mitSchlaf.length === 0) return null;
+
+  // Letzten 7 Schlafeinträge für Durchschnitt
+  const letzte7 = mitSchlaf.slice(0, 7);
+  const schnitt = letzte7.reduce((sum, e) => sum + e.schlaf, 0) / letzte7.length;
+
+  return {
+    schnitt,                          // Durchschnittliche Schlafdauer
+    letzteEintraege: mitSchlaf.slice(0, 5)   // Letzte 5 für die Anzeige
+  };
+}

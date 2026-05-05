@@ -67,6 +67,9 @@ function aktualisiereDashboard() {
   zeigePlateau(p);
   zeigeStreak(p);
   zeigeWochendurchschnitt(p);
+  zeigeKalorienziel(p);
+  zeigeKoerperfett(p);
+  zeigeSchlaf(p);
   zeigeChart(p, aktuelleChartAnsicht);
 }
 
@@ -731,7 +734,6 @@ function zeigeBMR(p) {
   const container = document.getElementById('bmr-anzeige');
   if (!container) return;
 
-  // Braucht Alter + Geschlecht – prüfen ob vorhanden
   if (!p.alter || !p.geschlecht) {
     container.innerHTML = '<span style="font-size:13px;color:#aaa;">Bitte Alter und Geschlecht im Profil ergänzen.</span>';
     return;
@@ -741,8 +743,6 @@ function zeigeBMR(p) {
   const bmr   = berechneBMR(letzt, p.groesse, p.alter, p.geschlecht);
   const level = p.aktivitaet || 'sitzend';
   const tdee  = berechneTDEE(bmr, level);
-
-  // Empfehlungen für Abnehmen (500 kcal Defizit = ~0.5 kg/Woche)
   const zielKcal = tdee - 500;
 
   const levelTexte = {
@@ -770,4 +770,180 @@ function zeigeBMR(p) {
       <span style="color:#888;">💡 Ziel für 0,5 kg/Woche</span>
       <span style="font-weight:500;color:#0F6E56;">${zielKcal} kcal/Tag</span>
     </div>`;
+}
+
+
+// ========== KALORIENZIEL-ANZEIGE ==========
+
+/**
+ * Zeigt Soll/Ist-Vergleich der heutigen Kalorien auf dem Dashboard.
+ * Ziel kommt aus BMR-Berechnung (TDEE - 500).
+ */
+function zeigeKalorienziel(p) {
+  const container = document.getElementById('kalorienziel-anzeige');
+  if (!container) return;
+
+  // Braucht BMR-Daten im Profil
+  if (!p.alter || !p.geschlecht) {
+    container.innerHTML = '<span style="font-size:13px;color:#aaa;">Bitte zuerst im Profil BMR berechnen.</span>';
+    return;
+  }
+
+  const letzt    = p.eintraege.length ? p.eintraege[p.eintraege.length - 1].gewicht : p.start;
+  const bmr      = berechneBMR(letzt, p.groesse, p.alter, p.geschlecht);
+  const tdee     = berechneTDEE(bmr, p.aktivitaet || 'sitzend');
+  const ziel     = tdee - 500;                          // 500 kcal Defizit = ~0,5 kg/Woche
+
+  // Heutige Kalorien aus dem Eintrag holen
+  const h        = heute();
+  const heuteE   = p.eintraege.find(e => e.datum === h);
+  const gegessen = heuteE && heuteE.kalorien ? heuteE.kalorien : null;
+
+  // Fortschrittsbalken berechnen
+  const pct      = gegessen ? Math.min(100, Math.round((gegessen / ziel) * 100)) : 0;
+  const rest     = gegessen ? Math.max(0, ziel - gegessen) : ziel;
+
+  // Farbe je nachdem ob über oder unter Ziel
+  let balkenFarbe = '#1D9E75';                          // grün = im Ziel
+  if (gegessen && gegessen > ziel * 1.1) balkenFarbe = '#993C1D';   // rot = deutlich drüber
+  else if (gegessen && gegessen > ziel)  balkenFarbe = '#BA7517';   // orange = knapp drüber
+
+  container.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;">
+      <span style="font-size:22px;font-weight:500;color:${balkenFarbe};">${gegessen ? gegessen.toLocaleString('de-DE') : '–'} kcal</span>
+      <span style="font-size:13px;color:#888;">von ${ziel.toLocaleString('de-DE')} kcal</span>
+    </div>
+    <div style="background:#f0f0ea;border-radius:99px;height:8px;margin-bottom:8px;overflow:hidden;">
+      <div style="height:8px;border-radius:99px;background:${balkenFarbe};width:${pct}%;transition:width 0.4s;"></div>
+    </div>
+    <div style="font-size:12px;color:#888;">
+      ${gegessen
+        ? (gegessen <= ziel
+            ? `Noch <strong style="color:#0F6E56;">${rest.toLocaleString('de-DE')} kcal</strong> bis zum Tagesziel`
+            : `<strong style="color:#993C1D;">${(gegessen - ziel).toLocaleString('de-DE')} kcal</strong> über dem Tagesziel`)
+        : 'Heute noch keine Kalorien eingetragen.'}
+    </div>`;
+}
+
+
+// ========== KÖRPERFETT-ANZEIGE ==========
+
+/**
+ * Zeigt den geschätzten Körperfettanteil auf dem Dashboard.
+ * Berechnung kommt aus berechnung.js → berechneKoerperfett()
+ * Braucht: Bauch, Hals (+ Hüfte bei Frauen) aus dem letzten Körpermaß-Eintrag.
+ */
+function zeigeKoerperfett(p) {
+  const container = document.getElementById('koerperfett-anzeige');
+  if (!container) return;
+
+  // Braucht Geschlecht
+  if (!p.geschlecht) {
+    container.innerHTML = '<span style="font-size:13px;color:#aaa;">Bitte zuerst im Profil Geschlecht angeben.</span>';
+    return;
+  }
+
+  // Letzten Körpermaß-Eintrag mit Halsumfang suchen
+  const koerperMitHals = (p.koerper || [])
+    .filter(k => k.hals && k.bauch)
+    .sort((a, b) => b.datum.localeCompare(a.datum));
+
+  if (koerperMitHals.length === 0) {
+    container.innerHTML = '<span style="font-size:13px;color:#aaa;">Bitte Bauch- und Halsumfang im Eintragen-Tab erfassen.</span>';
+    return;
+  }
+
+  const letzter = koerperMitHals[0];
+  const kf = berechneKoerperfett(
+    p.groesse,
+    letzter.bauch,
+    letzter.huefte,
+    letzter.hals,
+    p.geschlecht
+  );
+
+  if (kf === null || kf < 0 || kf > 60) {
+    container.innerHTML = '<span style="font-size:13px;color:#aaa;">Bitte Maße prüfen – Ergebnis nicht plausibel.</span>';
+    return;
+  }
+
+  const bewertung = bewerteKoerperfett(kf, p.geschlecht);
+
+  container.innerHTML = `
+    <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px;">
+      <span style="font-size:26px;font-weight:500;color:${bewertung.farbe};">${kf.toFixed(1)}%</span>
+      <span style="font-size:13px;color:${bewertung.farbe};font-weight:500;">${bewertung.kategorie}</span>
+    </div>
+    <div style="font-size:12px;color:#888;">Gemessen am ${letzter.datum} · Navy-Methode</div>`;
+}
+
+
+// ========== SCHLAF-ANZEIGE ==========
+
+/**
+ * Zeigt den heutigen Schlaf + Durchschnitt auf dem Dashboard.
+ * Berechnung kommt aus berechnung.js → berechneDurchschnittSchlaf()
+ */
+function zeigeSchlaf(p) {
+  const container = document.getElementById('schlaf-anzeige');
+  if (!container) return;
+
+  const result = berechneDurchschnittSchlaf(p.eintraege);
+
+  // Heutigen Schlaf separat holen
+  const h      = heute();
+  const heuteE = p.eintraege.find(e => e.datum === h);
+  const heuteSchlaf = heuteE && heuteE.schlaf ? heuteE.schlaf : null;
+
+  // Schlaf-Bewertung: 7-9h optimal
+  function schlafFarbe(h) {
+    if (h >= 7 && h <= 9) return '#0F6E56';    // grün = optimal
+    if (h >= 6 && h < 7)  return '#BA7517';    // orange = knapp
+    return '#993C1D';                           // rot = zu wenig / zu viel
+  }
+
+  if (!result && !heuteSchlaf) {
+    container.innerHTML = '<span style="font-size:13px;color:#aaa;">Noch kein Schlaf eingetragen – im Eintragen-Tab erfassen.</span>';
+    return;
+  }
+
+  const farbe = heuteSchlaf ? schlafFarbe(heuteSchlaf) : '#888';
+
+  container.innerHTML = `
+    <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:6px;">
+      <span style="font-size:26px;font-weight:500;color:${farbe};">${heuteSchlaf ? heuteSchlaf + 'h' : '–'}</span>
+      <span style="font-size:13px;color:#888;">heute</span>
+      ${result ? `<span style="font-size:13px;color:#888;margin-left:auto;">Ø ${result.schnitt.toFixed(1)}h / Nacht</span>` : ''}
+    </div>
+    <div style="font-size:12px;color:#888;">
+      ${heuteSchlaf
+        ? (heuteSchlaf >= 7 && heuteSchlaf <= 9 ? '✓ Optimale Schlafdauer (7–9h)' : heuteSchlaf < 7 ? '⚠ Zu wenig Schlaf – Ziel: 7–9h' : '⚠ Zu viel Schlaf kann Müdigkeit verstärken')
+        : 'Ziel: 7–9 Stunden pro Nacht'}
+    </div>`;
+}
+
+
+// ========== SCHLAF-VERLAUF IM PROFIL ==========
+
+/**
+ * Zeigt die letzten Schlafeinträge im Profil-Tab als Liste.
+ */
+function zeigeSchlafVerlauf(p) {
+  const container = document.getElementById('schlaf-verlauf');
+  if (!container) return;
+
+  const result = berechneDurchschnittSchlaf(p.eintraege);
+
+  if (!result) {
+    container.innerHTML = '<span style="font-size:13px;color:#aaa;">Noch keine Schlafeinträge vorhanden.</span>';
+    return;
+  }
+
+  container.innerHTML = result.letzteEintraege.map(e => {
+    const farbe = e.schlaf >= 7 && e.schlaf <= 9 ? '#0F6E56' : e.schlaf < 7 ? '#993C1D' : '#BA7517';
+    return `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid rgba(0,0,0,0.06);">
+      <span style="color:#888;font-size:13px;">${e.datum}</span>
+      <span style="font-weight:500;color:${farbe};">${e.schlaf}h</span>
+    </div>`;
+  }).join('');
 }
