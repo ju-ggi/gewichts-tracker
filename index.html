@@ -338,6 +338,21 @@
         <button class="btn primaer" onclick="exportCSV()">Als CSV herunterladen (Excel)</button>
         <button class="btn" onclick="exportPDF()">Als PDF herunterladen</button>
 
+        <!-- ======= ERINNERUNGEN ======= -->
+        <p class="abschnitt" style="margin-top:20px;">🔔 Tägliche Erinnerung</p>
+        <p style="font-size:13px;color:#888;margin-bottom:12px;">
+          Erinnere mich täglich ans Wiegen. Der Browser fragt einmalig nach Erlaubnis.
+        </p>
+        <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:8px;">
+          <div style="flex:1;">
+            <label>Uhrzeit</label>
+            <input type="time" id="erinnerung-uhrzeit" value="07:30" style="margin-bottom:0;"/>
+          </div>
+          <button class="btn primaer" onclick="erinnerungAktivieren()" style="flex-shrink:0;width:auto;padding:10px 18px;margin-bottom:0;">Aktivieren</button>
+        </div>
+        <div id="erinnerung-status" style="font-size:13px;color:#888;margin-bottom:4px;"></div>
+        <button class="btn" onclick="erinnerungDeaktivieren()" id="erinnerung-stopp-btn" style="display:none;">Erinnerung deaktivieren</button>
+
         <p class="abschnitt" style="margin-top:20px;">💾 Datensicherung</p>
         <p style="font-size:13px;color:#888;margin-bottom:12px;">Alle Profildaten sichern oder wiederherstellen. Nützlich beim Gerätewechsel oder als Backup.</p>
         <button class="btn primaer" onclick="backupErstellen()">⬇ Backup herunterladen</button>
@@ -401,6 +416,7 @@ function profilWaehlen(i) {
   aktivesProfilIndex = i;
   zeige('app');
   wechsleTab('uebersicht');
+  erinnerungBeimLadenPruefen(); // Erinnerung neu starten falls gespeichert
 }
 
 function profilSpeichern() {
@@ -766,6 +782,150 @@ function allesSpreichern() {
 }
 
 
-</script>
+// =============================================
+// ERINNERUNGEN – Browser-Benachrichtigungen
+//
+// Was passiert hier?
+// 1. Wir fragen den Browser einmalig nach Erlaubnis,
+//    Benachrichtigungen zu senden.
+// 2. Wir speichern die gewählte Uhrzeit im localStorage.
+// 3. Jede Minute prüft ein Timer: Ist es jetzt die
+//    gewählte Uhrzeit? Wenn ja → Benachrichtigung!
+//
+// Wichtig: Benachrichtigungen funktionieren nur,
+// solange die App im Browser geöffnet ist.
+// =============================================
+
+// Diese Variable hält den laufenden Timer
+let erinnerungsTimer = null;
+
+/**
+ * Aktiviert die tägliche Erinnerung.
+ * Fragt nach Browser-Erlaubnis und startet den Timer.
+ */
+function erinnerungAktivieren() {
+  const uhrzeit = document.getElementById('erinnerung-uhrzeit').value;
+  const statusEl = document.getElementById('erinnerung-status');
+  const stoppBtn = document.getElementById('erinnerung-stopp-btn');
+
+  // Schritt 1: Prüfen ob der Browser Benachrichtigungen unterstützt
+  if (!('Notification' in window)) {
+    statusEl.textContent = '⚠ Dein Browser unterstützt keine Benachrichtigungen.';
+    statusEl.style.color = '#993C1D';
+    return;
+  }
+
+  // Schritt 2: Erlaubnis anfragen (erscheint als Browser-Dialog)
+  // requestPermission() gibt ein Promise zurück – also warten wir mit .then()
+  Notification.requestPermission().then(function(erlaubnis) {
+
+    if (erlaubnis === 'granted') {
+      // Erlaubnis erteilt → Uhrzeit speichern und Timer starten
+      localStorage.setItem('wt_erinnerung', uhrzeit);
+      statusEl.textContent = '✓ Erinnerung aktiv für ' + uhrzeit + ' Uhr.';
+      statusEl.style.color = '#0F6E56';
+      stoppBtn.style.display = 'block';
+      erinnerungsTimerStarten();
+
+    } else if (erlaubnis === 'denied') {
+      // Nutzer hat abgelehnt → Browser-Einstellungen erklären
+      statusEl.textContent = '⚠ Benachrichtigungen blockiert. Bitte in den Browser-Einstellungen erlauben.';
+      statusEl.style.color = '#993C1D';
+
+    } else {
+      // 'default' = Nutzer hat den Dialog weggeklickt
+      statusEl.textContent = 'Bitte Erlaubnis erteilen um Erinnerungen zu aktivieren.';
+      statusEl.style.color = '#888';
+    }
+  });
+}
+
+/**
+ * Startet einen Timer der jede Minute prüft
+ * ob es Zeit für die Erinnerung ist.
+ */
+function erinnerungsTimerStarten() {
+  // Alten Timer stoppen falls einer läuft
+  if (erinnerungsTimer) clearInterval(erinnerungsTimer);
+
+  // Alle 60 Sekunden prüfen
+  // setInterval(funktion, millisekunden) → 60000ms = 1 Minute
+  erinnerungsTimer = setInterval(function() {
+
+    const gespeicherteUhrzeit = localStorage.getItem('wt_erinnerung');
+    if (!gespeicherteUhrzeit) return; // Keine Erinnerung gespeichert → nichts tun
+
+    // Aktuelle Uhrzeit im Format "HH:MM" holen
+    const jetzt = new Date();
+    const h = String(jetzt.getHours()).padStart(2, '0');
+    const m = String(jetzt.getMinutes()).padStart(2, '0');
+    const jetztStr = h + ':' + m;
+
+    // Stimmt die aktuelle Uhrzeit mit der gespeicherten überein?
+    if (jetztStr === gespeicherteUhrzeit) {
+
+      // Haben wir heute schon eine Benachrichtigung gesendet?
+      // (verhindert, dass jede Minute eine neue kommt)
+      const heuteKey = 'wt_erinnerung_gesendet_' + heute();
+      if (localStorage.getItem(heuteKey)) return;
+      localStorage.setItem(heuteKey, '1'); // Merken dass wir heute schon gesendet haben
+
+      // Haben wir heute schon einen Eintrag?
+      const p = aktivesProfile();
+      if (p) {
+        const heuteEintrag = p.eintraege.some(e => e.datum === heute());
+        if (heuteEintrag) return; // Schon eingetragen → keine Erinnerung nötig
+      }
+
+      // Benachrichtigung senden!
+      new Notification('Gewichts-Tracker ⚖️', {
+        body: 'Hast du dich heute schon gewogen? Trag es jetzt ein!',
+        icon: '/favicon.ico'  // Optionales Icon – kein Problem wenn nicht vorhanden
+      });
+    }
+
+  }, 60000); // Alle 60 Sekunden = jede Minute
+}
+
+/**
+ * Deaktiviert die Erinnerung und stoppt den Timer.
+ */
+function erinnerungDeaktivieren() {
+  localStorage.removeItem('wt_erinnerung');
+  if (erinnerungsTimer) { clearInterval(erinnerungsTimer); erinnerungsTimer = null; }
+
+  const statusEl = document.getElementById('erinnerung-status');
+  const stoppBtn = document.getElementById('erinnerung-stopp-btn');
+  statusEl.textContent = 'Erinnerung deaktiviert.';
+  statusEl.style.color = '#888';
+  stoppBtn.style.display = 'none';
+}
+
+/**
+ * Beim Laden der Seite prüfen ob eine Erinnerung gespeichert ist.
+ * Wenn ja → UI aktualisieren und Timer neu starten.
+ * So bleibt die Erinnerung auch nach einem Browser-Neustart aktiv.
+ */
+function erinnerungBeimLadenPruefen() {
+  const gespeichert = localStorage.getItem('wt_erinnerung');
+  if (!gespeichert) return;
+
+  // UI-Elemente vorab setzen (falls Profil-Tab noch nicht gerendert ist)
+  // Wir warten etwas um sicherzustellen dass das DOM bereit ist
+  setTimeout(function() {
+    const uhrzeitEl = document.getElementById('erinnerung-uhrzeit');
+    const statusEl  = document.getElementById('erinnerung-status');
+    const stoppBtn  = document.getElementById('erinnerung-stopp-btn');
+
+    if (uhrzeitEl)  uhrzeitEl.value = gespeichert;
+    if (statusEl) { statusEl.textContent = '✓ Erinnerung aktiv für ' + gespeichert + ' Uhr.'; statusEl.style.color = '#0F6E56'; }
+    if (stoppBtn)   stoppBtn.style.display = 'block';
+
+    // Timer wieder starten
+    if (Notification.permission === 'granted') erinnerungsTimerStarten();
+  }, 500);
+}
+
+
 </body>
 </html>

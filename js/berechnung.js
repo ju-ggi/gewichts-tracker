@@ -96,8 +96,8 @@ function berechneTrend(eintraege, haltegewichtModus) {
   } else {
     // Abnehmphase: Abnahme ist gut
     if (trendWert < -0.2)      { klasse = 'gruen'; symbol = '↓'; text = 'Trend: Du nimmst ab – weiter so!'; }
-    else if (trendWert < 0.3)  { klasse = 'gelb';  symbol = '→'; text = 'Trend: Kaum Veränderung in den letzten 7 Tagen – dranbleiben!'; }
-    else                       { klasse = 'rot';   symbol = '↑'; text = 'Trend: Leichte Zunahme diese Woche – aufpassen!'; }
+    else if (trendWert < 0.3)  { klasse = 'gelb';  symbol = '→'; text = 'Trend: Kaum Veränderung – dranbleiben, das ist normal!'; }
+    else                       { klasse = 'gelb';  symbol = '↑'; text = 'Leichte Zunahme – kein Grund zur Sorge. Schau auf deinen 7-Tage-Schnitt.'; }
   }
 
   return { trendWert, klasse, symbol, text };

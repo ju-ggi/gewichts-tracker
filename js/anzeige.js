@@ -55,10 +55,8 @@ function aktualisiereDashboard() {
     ms.innerHTML += `<div class="meilenstein">&#127942; Meilenstein: ${m} kg abgenommen!</div>`;
   });
 
-  // Wochenzusammenfassung nur montags zeigen
-  const heute_obj = new Date();
-  if (heute_obj.getDay() === 1) zeigeWochenzusammenfassung(p);
-  else document.getElementById('wochen-summary').classList.add('versteckt');
+  // Wochenzusammenfassung immer anzeigen (nicht nur montags)
+  zeigeWochenzusammenfassung(p);
 
   // Alle Teilbereiche aktualisieren
   zeigeAmpel(p);
@@ -104,19 +102,79 @@ function zeigeWochenzusammenfassung(p) {
 
   if (!woche) { container.classList.add('versteckt'); return; }
 
+  // ── Gewichtsveränderung ──────────────────────────────────────────
   const sign  = woche.diff <= 0 ? '' : '+';
   const farbe = woche.diff <= 0 ? '#0F6E56' : '#993C1D';
 
+  // ── Schlaf-Durchschnitt der letzten 7 Tage ──────────────────────
+  // Wir schauen direkt in die Einträge, analog zu berechneDurchschnittSchlaf()
+  const vorWoche = new Date();
+  vorWoche.setDate(vorWoche.getDate() - 7);
+  const vorWocheStr = vorWoche.toISOString().split('T')[0];
+  const wochenEintraege = p.eintraege.filter(e => e.datum >= vorWocheStr);
+  const mitSchlaf = wochenEintraege.filter(e => e.schlaf && e.schlaf > 0);
+  const schlafSchnitt = mitSchlaf.length
+    ? (mitSchlaf.reduce((sum, e) => sum + e.schlaf, 0) / mitSchlaf.length).toFixed(1)
+    : null;
+
+  // ── Emotionaler Highlight-Text ───────────────────────────────────
+  // Kombiniert mehrere Faktoren zu einem motivierenden Satz
+  let highlight = '';
+  if (woche.diff <= -1) {
+    highlight = '🎉 Starke Woche – über 1 kg abgenommen!';
+  } else if (woche.diff < 0) {
+    highlight = '✅ Auf dem richtigen Weg – Gewicht geht runter.';
+  } else if (woche.diff < 0.3) {
+    highlight = '➡️ Stabile Woche – das Gewicht hält sich.';
+  } else {
+    // Zunahme: ruhig und kontextbezogen (kein roter Alarm)
+    highlight = '💡 Leichte Zunahme – das ist normal. Der 7-Tage-Schnitt zeigt den echten Trend.';
+  }
+
+  // Sport-Bonus zum Highlight hinzufügen
+  if (woche.sportTage >= 3) {
+    highlight += ' Dazu ' + woche.sportTage + 'x Sport – top!';
+  }
+
+  // ── Einträge-Bewertung ───────────────────────────────────────────
+  let eintraegeText = '';
+  if (woche.anzahlEintraege >= 6)     eintraegeText = '🔥 Fast täglich eingetragen – super Disziplin!';
+  else if (woche.anzahlEintraege >= 4) eintraegeText = `${woche.anzahlEintraege}x diese Woche eingetragen.`;
+  else                                 eintraegeText = `${woche.anzahlEintraege}x eingetragen – mehr Einträge = genauerer Trend.`;
+
+  // ── HTML zusammenbauen ───────────────────────────────────────────
   container.className = 'karte volle-breite';
   container.innerHTML = `
-    <p class="abschnitt">📊 Wochenzusammenfassung</p>
+    <p class="abschnitt">📊 Diese Woche</p>
+
+    <!-- Highlight-Box: emotionaler Kernsatz -->
+    <div style="background:#f5f5f0;border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:14px;color:#1a1a1a;line-height:1.5;">
+      ${highlight}
+    </div>
+
+    <!-- Zahlen-Übersicht -->
     <div class="woche-karte">
-      <div class="woche-stat"><span>Einträge diese Woche</span><strong>${woche.anzahlEintraege}</strong></div>
-      <div class="woche-stat"><span>Gewicht von → bis</span><strong>${woche.erstesGewicht.toFixed(1)} → ${woche.letztesGewicht.toFixed(1)} kg</strong></div>
-      <div class="woche-stat"><span>Veränderung</span><strong style="color:${farbe}">${sign}${woche.diff.toFixed(1)} kg</strong></div>
-      ${woche.kcalDurchschnitt ? `<div class="woche-stat"><span>Ø Kalorien/Tag</span><strong>${woche.kcalDurchschnitt} kcal</strong></div>` : ''}
-      ${woche.sportTage > 0 ? `<div class="woche-stat"><span>Sport-Tage</span><strong>${woche.sportTage}x</strong></div>` : ''}
+      <div class="woche-stat">
+        <span>Gewicht: ${woche.erstesGewicht.toFixed(1)} → ${woche.letztesGewicht.toFixed(1)} kg</span>
+        <strong style="color:${farbe};">${sign}${woche.diff.toFixed(1)} kg</strong>
+      </div>
+      <div class="woche-stat">
+        <span>${eintraegeText}</span>
+        <strong>${woche.anzahlEintraege}/7</strong>
+      </div>
+      ${woche.sportTage > 0
+        ? `<div class="woche-stat"><span>Sport-Tage</span><strong>${woche.sportTage}x 💪</strong></div>`
+        : ''}
+      ${woche.kcalDurchschnitt
+        ? `<div class="woche-stat"><span>Ø Kalorien/Tag</span><strong>${woche.kcalDurchschnitt} kcal</strong></div>`
+        : ''}
+      ${schlafSchnitt
+        ? `<div class="woche-stat"><span>Ø Schlaf</span>
+            <strong style="color:${parseFloat(schlafSchnitt) >= 7 ? '#0F6E56' : '#BA7517'};">${schlafSchnitt}h</strong>
+           </div>`
+        : ''}
     </div>`;
+
   container.classList.remove('versteckt');
 }
 
