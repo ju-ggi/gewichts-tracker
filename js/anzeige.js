@@ -65,6 +65,8 @@ function aktualisiereDashboard() {
   zeigeWasser(p);
   zeigePrognose(p);
   zeigePlateau(p);
+  zeigeStreak(p);
+  zeigeWochendurchschnitt(p);
   zeigeChart(p, aktuelleChartAnsicht);
 }
 
@@ -652,4 +654,120 @@ function zeigeToast(text = '✓ Gespeichert', farbe = '#0F6E56') {
   t.style.background = farbe;
   t.classList.add('sichtbar');
   setTimeout(() => t.classList.remove('sichtbar'), 2500);
+}
+
+
+// ========== 7-TAGE-DURCHSCHNITT ==========
+
+/**
+ * Zeigt den 7-Tage-Durchschnitt auf dem Dashboard.
+ * Berechnung kommt aus berechnung.js → berechneWochendurchschnitt()
+ */
+function zeigeWochendurchschnitt(p) {
+  const container = document.getElementById('wochen-schnitt');
+  if (!container) return;
+
+  const result = berechneWochendurchschnitt(p.eintraege);
+
+  if (!result) {
+    container.innerHTML = '<span style="color:#aaa;font-size:13px;">Noch zu wenig Einträge.</span>';
+    return;
+  }
+
+  container.innerHTML = `
+    <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:0.5px solid rgba(0,0,0,0.07);">
+      <span style="color:#888;">Ø Gewicht (letzte ${result.anzahl} Tage)</span>
+      <span style="font-weight:500;font-size:15px;color:#0F6E56;">${result.schnitt.toFixed(2)} kg</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:0.5px solid rgba(0,0,0,0.07);">
+      <span style="color:#888;">Tiefstwert</span>
+      <span style="font-weight:500;">${result.min.toFixed(1)} kg</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding:5px 0;">
+      <span style="color:#888;">Höchstwert</span>
+      <span style="font-weight:500;">${result.max.toFixed(1)} kg</span>
+    </div>`;
+}
+
+
+// ========== STREAK-ANZEIGE ==========
+
+/**
+ * Zeigt den aktuellen Eintrag-Streak auf dem Dashboard.
+ * Berechnung kommt aus berechnung.js → berechneStreak()
+ */
+function zeigeStreak(p) {
+  const container = document.getElementById('streak-anzeige');
+  if (!container) return;
+
+  const streak = berechneStreak(p.eintraege);
+
+  // Emoji und Motivationstext je nach Streak-Länge
+  let emoji, text;
+  if (streak === 0)       { emoji = '😴'; text = 'Noch kein Eintrag heute – starte jetzt!'; }
+  else if (streak === 1)  { emoji = '🌱'; text = 'Erster Eintrag – fang einen Streak an!'; }
+  else if (streak < 7)    { emoji = '🔥'; text = `${streak} Tage in Folge – bleib dabei!`; }
+  else if (streak < 30)   { emoji = '🔥🔥'; text = `${streak} Tage in Folge – stark!`; }
+  else                    { emoji = '🏆'; text = `${streak} Tage in Folge – Legende!`; }
+
+  container.innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span style="font-size:28px;line-height:1;">${emoji}</span>
+      <div>
+        <div style="font-size:22px;font-weight:500;color:#1D9E75;line-height:1.1;">${streak} Tage</div>
+        <div style="font-size:12px;color:#888;margin-top:2px;">${text}</div>
+      </div>
+    </div>`;
+}
+
+
+// ========== BMR / KALORIENBEDARF ==========
+
+/**
+ * Zeigt den berechneten Grundumsatz und Kalorienbedarf im Profil-Tab.
+ * Berechnung kommt aus berechnung.js → berechneBMR() + berechneTDEE()
+ */
+function zeigeBMR(p) {
+  const container = document.getElementById('bmr-anzeige');
+  if (!container) return;
+
+  // Braucht Alter + Geschlecht – prüfen ob vorhanden
+  if (!p.alter || !p.geschlecht) {
+    container.innerHTML = '<span style="font-size:13px;color:#aaa;">Bitte Alter und Geschlecht im Profil ergänzen.</span>';
+    return;
+  }
+
+  const letzt = p.eintraege.length ? p.eintraege[p.eintraege.length - 1].gewicht : p.start;
+  const bmr   = berechneBMR(letzt, p.groesse, p.alter, p.geschlecht);
+  const level = p.aktivitaet || 'sitzend';
+  const tdee  = berechneTDEE(bmr, level);
+
+  // Empfehlungen für Abnehmen (500 kcal Defizit = ~0.5 kg/Woche)
+  const zielKcal = tdee - 500;
+
+  const levelTexte = {
+    sitzend:    'Sitzend (kaum Bewegung)',
+    leicht:     'Leicht aktiv (1–3x/Woche)',
+    maessig:    'Mäßig aktiv (3–5x/Woche)',
+    aktiv:      'Aktiv (6–7x/Woche)',
+    sehr_aktiv: 'Sehr aktiv (tägl. Sport + Arbeit)'
+  };
+
+  container.innerHTML = `
+    <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:0.5px solid rgba(0,0,0,0.07);">
+      <span style="color:#888;">Grundumsatz (BMR)</span>
+      <span style="font-weight:500;">${bmr.toFixed(0)} kcal</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:0.5px solid rgba(0,0,0,0.07);">
+      <span style="color:#888;">Gesamtbedarf (TDEE)</span>
+      <span style="font-weight:500;">${tdee} kcal</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:0.5px solid rgba(0,0,0,0.07);">
+      <span style="color:#888;">Aktivitätslevel</span>
+      <span style="font-weight:500;font-size:12px;">${levelTexte[level]}</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding:5px 0;">
+      <span style="color:#888;">💡 Ziel für 0,5 kg/Woche</span>
+      <span style="font-weight:500;color:#0F6E56;">${zielKcal} kcal/Tag</span>
+    </div>`;
 }

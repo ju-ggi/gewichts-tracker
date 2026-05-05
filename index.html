@@ -123,6 +123,16 @@
         </div>
 
         <div class="karte">
+          <p class="abschnitt">🔥 Streak</p>
+          <div id="streak-anzeige"></div>
+        </div>
+
+        <div class="karte volle-breite">
+          <p class="abschnitt">📊 Ø 7-Tage-Durchschnitt</p>
+          <div id="wochen-schnitt" style="font-size:14px;"></div>
+        </div>
+
+        <div class="karte">
           <p class="abschnitt">Wasser heute</p>
           <div class="wasser-gläser" id="wasser-gläser"></div>
           <p class="wasser-text" id="wasser-text"></p>
@@ -266,6 +276,36 @@
         <div id="kcal-verlauf"></div>
       </div>
 
+      <!-- BMR / Kalorienbedarf -->
+      <div class="karte">
+        <p class="abschnitt">🔥 Kalorienbedarf (BMR)</p>
+        <p style="font-size:13px;color:#888;margin-bottom:12px;">Dein persönlicher Tagesbedarf – Grundlage für dein Kaloriendefizit.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+          <div>
+            <label>Alter (Jahre)</label>
+            <input type="number" id="bmr-alter" placeholder="z. B. 35" min="10" max="100" step="1"/>
+          </div>
+          <div>
+            <label>Geschlecht</label>
+            <select id="bmr-geschlecht">
+              <option value="">– wählen –</option>
+              <option value="m">Männlich</option>
+              <option value="w">Weiblich</option>
+            </select>
+          </div>
+        </div>
+        <label>Aktivitätslevel</label>
+        <select id="bmr-aktivitaet" style="margin-bottom:12px;">
+          <option value="sitzend">Sitzend (Bürojob, kaum Sport)</option>
+          <option value="leicht">Leicht aktiv (1–3x Sport/Woche)</option>
+          <option value="maessig">Mäßig aktiv (3–5x Sport/Woche)</option>
+          <option value="aktiv">Aktiv (6–7x Sport/Woche)</option>
+          <option value="sehr_aktiv">Sehr aktiv (tägl. Sport + körperl. Arbeit)</option>
+        </select>
+        <button class="btn primaer" onclick="bmrSpeichern()" style="margin-bottom:16px;">Berechnen &amp; speichern</button>
+        <div id="bmr-anzeige" style="font-size:14px;"></div>
+      </div>
+
       <div class="karte">
         <p class="abschnitt">Export</p>
         <p style="font-size:13px;color:#888;margin-bottom:12px;">Deine Daten als Datei herunterladen.</p>
@@ -360,7 +400,17 @@ function wechsleTab(tab) {
   });
   if (tab === 'uebersicht') aktualisiereDashboard();
   if (tab === 'verlauf') zeigeVerlauf();
-  if (tab === 'profil') { zeigeProfil(); zeigeKcalVerlauf(); zeigeZielAnpassungKarte(); }
+  if (tab === 'profil') {
+    zeigeProfil();
+    zeigeKcalVerlauf();
+    zeigeZielAnpassungKarte();
+    const p = aktivesProfile();
+    zeigeBMR(p);
+    // BMR-Felder vorausfüllen wenn bereits gespeichert
+    if (p.alter)      document.getElementById('bmr-alter').value = p.alter;
+    if (p.geschlecht) document.getElementById('bmr-geschlecht').value = p.geschlecht;
+    if (p.aktivitaet) document.getElementById('bmr-aktivitaet').value = p.aktivitaet;
+  }
   if (tab === 'eintragen') initialisiereEintragenTab();
 }
 
@@ -475,7 +525,35 @@ function toggleTag(btn) {
   else gewaehlteTypen.push(typ);
 }
 
-// ========== SCHNELL-SPEICHERN (von Übersicht) ==========
+// ========== BMR SPEICHERN ==========
+
+function bmrSpeichern() {
+  const alter = parseInt(document.getElementById('bmr-alter').value);
+  const geschlecht = document.getElementById('bmr-geschlecht').value;
+  const aktivitaet = document.getElementById('bmr-aktivitaet').value;
+
+  if (!alter || alter < 10 || alter > 100) {
+    zeigeToast('⚠ Bitte gültiges Alter eingeben', '#993C1D');
+    return;
+  }
+  if (!geschlecht) {
+    zeigeToast('⚠ Bitte Geschlecht auswählen', '#993C1D');
+    return;
+  }
+
+  // Werte im Profil speichern
+  const profile = ladeProfile();
+  profile[aktivesProfilIndex].alter = alter;
+  profile[aktivesProfilIndex].geschlecht = geschlecht;
+  profile[aktivesProfilIndex].aktivitaet = aktivitaet;
+  speichereProfile(profile);
+
+  zeigeToast('✓ Profil aktualisiert');
+  zeigeBMR(aktivesProfile());   // Direkt neu anzeigen
+}
+
+
+
 
 function schnellSpeichern() {
   const val = parseFloat(document.getElementById('schnell-gewicht').value);
