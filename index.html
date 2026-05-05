@@ -337,6 +337,13 @@
         <p style="font-size:13px;color:#888;margin-bottom:12px;">Deine Daten als Datei herunterladen.</p>
         <button class="btn primaer" onclick="exportCSV()">Als CSV herunterladen (Excel)</button>
         <button class="btn" onclick="exportPDF()">Als PDF herunterladen</button>
+
+        <p class="abschnitt" style="margin-top:20px;">💾 Datensicherung</p>
+        <p style="font-size:13px;color:#888;margin-bottom:12px;">Alle Profildaten sichern oder wiederherstellen. Nützlich beim Gerätewechsel oder als Backup.</p>
+        <button class="btn primaer" onclick="backupErstellen()">⬇ Backup herunterladen</button>
+        <button class="btn" onclick="document.getElementById('backup-import').click()">⬆ Backup wiederherstellen</button>
+        <input type="file" id="backup-import" accept=".json" style="display:none;" onchange="backupEinspielen(this)"/>
+        <div id="backup-status" style="font-size:13px;margin-top:10px;"></div>
       </div>
     </div>
 
@@ -576,6 +583,93 @@ function bmrSpeichern() {
 
   zeigeToast('✓ Profil aktualisiert');
   zeigeBMR(aktivesProfile());   // Direkt neu anzeigen
+}
+
+
+// ========== BACKUP ERSTELLEN ==========
+
+function backupErstellen() {
+  // Alle Profildaten aus localStorage holen
+  const daten = localStorage.getItem('wt_profile');
+
+  if (!daten) {
+    zeigeToast('⚠ Keine Daten zum Sichern gefunden', '#993C1D');
+    return;
+  }
+
+  // Dateiname mit heutigem Datum, z.B. "gewichtstracker-backup-2026-05-05.json"
+  const dateiname = 'gewichtstracker-backup-' + heute() + '.json';
+
+  // Blob = eine Datei im Speicher; URL.createObjectURL macht daraus einen Download-Link
+  const blob = new Blob([daten], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = dateiname;
+  a.click();
+
+  // Speicher wieder freigeben (Link wird nicht mehr gebraucht)
+  URL.revokeObjectURL(url);
+
+  zeigeToast('✓ Backup heruntergeladen');
+}
+
+
+// ========== BACKUP EINSPIELEN ==========
+
+function backupEinspielen(input) {
+  const datei = input.files[0];
+  if (!datei) return;
+
+  const status = document.getElementById('backup-status');
+
+  // FileReader liest die Datei als Text (asynchron = im Hintergrund)
+  const reader = new FileReader();
+
+  reader.onload = function(e) {
+    try {
+      const inhalt = e.target.result;
+
+      // JSON.parse prüft ob der Text gültiges JSON ist
+      // Wenn nicht → springt er direkt in den catch-Block
+      const parsed = JSON.parse(inhalt);
+
+      // Sicherheitscheck: muss ein Array von Profilen sein
+      if (!Array.isArray(parsed)) {
+        status.innerHTML = '<span style="color:#993C1D;">⚠ Ungültige Backup-Datei – bitte prüfen.</span>';
+        return;
+      }
+
+      // Bestätigungsdialog – der Nutzer soll bewusst entscheiden
+      const bestaetigt = confirm(
+        `Backup einspielen?\n\n` +
+        `Gefunden: ${parsed.length} Profil(e) in "${datei.name}"\n\n` +
+        `⚠ Das überschreibt alle aktuellen Daten!\n\nFortfahren?`
+      );
+
+      if (!bestaetigt) {
+        input.value = '';    // Dateiauswahl zurücksetzen
+        return;
+      }
+
+      // Daten zurück in localStorage schreiben
+      localStorage.setItem('wt_profile', inhalt);
+
+      status.innerHTML = `<span style="color:#0F6E56;">✓ ${parsed.length} Profil(e) erfolgreich wiederhergestellt.</span>`;
+      zeigeToast('✓ Backup eingespielt – bitte Profil wählen');
+
+      // Kurze Pause, dann zur Profilauswahl weiterleiten
+      setTimeout(() => zeige('profile'), 1500);
+
+    } catch (err) {
+      // Dieser Block läuft wenn JSON.parse fehlschlägt (keine gültige Datei)
+      status.innerHTML = '<span style="color:#993C1D;">⚠ Fehler: Datei ist kein gültiges Backup.</span>';
+    }
+
+    input.value = '';    // Dateiauswahl für nächste Nutzung zurücksetzen
+  };
+
+  reader.readAsText(datei);    // Lesen starten – onload wird aufgerufen wenn fertig
 }
 
 
